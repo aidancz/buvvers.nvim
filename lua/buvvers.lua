@@ -128,12 +128,13 @@ M.create_buvvers_autocmd = function()
 	local buvvers_augroup = vim.api.nvim_create_augroup("buvvers", {clear = true})
 
 	vim.api.nvim_create_autocmd(
-		{"BufEnter", "BufAdd", "BufDelete"},
+		{"BufEnter", "BufAdd", "BufDelete", "WinClosed"},
 		{
 			group = buvvers_augroup,
 			callback = function()
 				vim.schedule(function()
 				-- HACK: wait until the current working directory is set (affect vim.fn.bufname)
+				-- HACK: wait until the window has been closed (affect WinClosed autocmd)
 					M.update_listed_buffer_handles()
 					M.ensure_buvvers_buf()
 					M.update_buvvers_buf()
