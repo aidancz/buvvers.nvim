@@ -1,7 +1,7 @@
 local M = {}
 local H = {}
 
-
+-- # config & setup
 
 M.config = {
 	buvvers_win = {
@@ -27,19 +27,22 @@ M.config = {
 	end,
 }
 
-M.cache = {
-	buvvers_buf_handle = nil,
-	buvvers_win_handle = nil,
-	buvvers_buf_highlight_extmark_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_extmark"),
-	listed_buffer_handles = {},
-}
-
 M.setup = function(config)
 	M.config = vim.tbl_deep_extend("force", M.config, config or {})
-	M.create_buvvers_autocmd()
+	-- M.create_buvvers_autocmd()
 end
 
+-- # cache
 
+M.cache = {
+	listed_buffer_handles = {},
+	buvvers_buf_handle = nil,
+	buvvers_buf_highlight_extmark_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_extmark"),
+	buvvers_win_handle = nil,
+	buvvers_augroup = vim.api.nvim_create_augroup("buvvers", {clear = true}),
+}
+
+-- # function: data
 
 M.update_listed_buffer_handles = function()
 	M.cache.listed_buffer_handles = {}
@@ -57,15 +60,26 @@ M.update_listed_buffer_handles = function()
 	end
 end
 
+-- # function: buffer
 
-
-M.ensure_buvvers_buf = function()
-	if
+M.buvvers_buf_is_valid = function()
+	return
 		M.cache.buvvers_buf_handle ~= nil
 		and
 		vim.api.nvim_buf_is_valid(M.cache.buvvers_buf_handle)
-	then
-		return
+end
+
+M.buvvers_buf_set_false = function()
+	if M.buvvers_buf_is_valid() then
+		vim.api.nvim_buf_delete(M.cache.buvvers_buf_handle, {force = true})
+	else
+		-- do nothing
+	end
+end
+
+M.buvvers_buf_set_true = function()
+	if M.buvvers_buf_is_valid() then
+		-- do nothing
 	else
 		M.cache.buvvers_buf_handle = vim.api.nvim_create_buf(false, true)
 	end
@@ -105,15 +119,26 @@ M.update_buvvers_buf = function()
 	end
 end
 
+-- # function: window
 
-
-M.ensure_buvvers_win = function()
-	if
+M.buvvers_win_is_valid = function()
+	return
 		M.cache.buvvers_win_handle ~= nil
 		and
 		vim.api.nvim_win_is_valid(M.cache.buvvers_win_handle)
-	then
-		return
+end
+
+M.buvvers_win_set_false = function()
+	if M.buvvers_win_is_valid() then
+		vim.api.nvim_win_close(M.cache.buvvers_win_handle, true)
+	else
+		-- do nothing
+	end
+end
+
+M.buvvers_win_set_true = function()
+	if M.buvvers_win_is_valid() then
+		-- do nothing
 	else
 		M.cache.buvvers_win_handle = vim.api.nvim_open_win(M.cache.buvvers_buf_handle, false, M.config.buvvers_win)
 		for option, value in pairs(M.config.buvvers_win_opt) do
@@ -122,28 +147,69 @@ M.ensure_buvvers_win = function()
 	end
 end
 
+-- # function: main
 
+M.buvvers_open = function()
+	M.update_listed_buffer_handles()
+	M.buvvers_buf_set_true()
+	M.update_buvvers_buf()
+	M.buvvers_win_set_true()
+end
 
-M.create_buvvers_autocmd = function()
-	local buvvers_augroup = vim.api.nvim_create_augroup("buvvers", {clear = true})
+M.buvvers_close = function()
+	M.buvvers_buf_set_false()
+	M.buvvers_win_set_false()
+end
 
+M.buvvers_toggle = function()
+	if M.buvvers_win_is_valid() then
+		M.buvvers_close()
+	else
+		M.buvvers_open()
+	end
+end
+
+-- # function: autocmd
+
+M.buvvers_autocmd_set_false = function()
+	vim.api.nvim_clear_autocmds({group = M.cache.buvvers_augroup})
+end
+
+M.buvvers_autocmd_set_true = function()
 	vim.api.nvim_create_autocmd(
 		{"BufEnter", "BufAdd", "BufDelete", "WinClosed"},
 		{
-			group = buvvers_augroup,
+			group = M.cache.buvvers_augroup,
 			callback = function()
 				vim.schedule(function()
 				-- HACK: wait until the current working directory is set (affect vim.fn.bufname)
 				-- HACK: wait until the window has been closed (affect WinClosed autocmd)
-					M.update_listed_buffer_handles()
-					M.ensure_buvvers_buf()
-					M.update_buvvers_buf()
-					M.ensure_buvvers_win()
+					M.buvvers_open()
 				end)
 			end,
 		})
 end
 
+-- # api
 
+M.open = function()
+	M.buvvers_autocmd_set_true()
+	M.buvvers_open()
+end
+
+M.close = function()
+	M.buvvers_autocmd_set_false()
+	M.buvvers_close()
+end
+
+M.toggle = function()
+	if M.buvvers_win_is_valid() then
+		M.close()
+	else
+		M.open()
+	end
+end
+
+-- # return
 
 return M
