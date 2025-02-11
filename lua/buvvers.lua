@@ -16,7 +16,9 @@ M.config = {
 		signcolumn = "no",
 		number = false,
 		relativenumber = false,
-		wrap = false,
+		wrap = true,
+		-- breakindent = true,
+		-- breakindentopt = "shift:4",
 		winfixwidth = true,
 		winfixheight = true,
 	},
@@ -29,7 +31,6 @@ M.config = {
 
 M.setup = function(config)
 	M.config = vim.tbl_deep_extend("force", M.config, config or {})
-	-- M.create_buvvers_autocmd()
 end
 
 -- # cache
@@ -177,15 +178,26 @@ end
 
 M.buvvers_autocmd_set_true = function()
 	vim.api.nvim_create_autocmd(
-		{"BufEnter", "BufAdd", "BufDelete", "WinClosed"},
+		{"BufEnter", "BufAdd", "BufDelete"},
 		{
 			group = M.cache.buvvers_augroup,
 			callback = function()
 				vim.schedule(function()
 				-- HACK: wait until the current working directory is set (affect vim.fn.bufname)
-				-- HACK: wait until the window has been closed (affect WinClosed autocmd)
 					M.buvvers_open()
 				end)
+			end,
+		})
+	vim.api.nvim_create_autocmd(
+		{"WinClosed"},
+		{
+			group = M.cache.buvvers_augroup,
+			callback = function(event)
+				local closing_window_handle = tonumber(event.match)
+				if closing_window_handle == M.cache.buvvers_win_handle then
+					M.buvvers_autocmd_set_false()
+					M.buvvers_close()
+				end
 			end,
 		})
 end
