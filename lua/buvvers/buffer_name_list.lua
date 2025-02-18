@@ -1,3 +1,17 @@
+-- local M = {}
+-- M.buffer_handle_list_to_buffer_name_list = function(handle_list)
+-- 	local name_l = {}
+-- 	for _, i in ipairs(handle_list) do
+-- 		local full_name = vim.api.nvim_buf_get_name(i)
+-- 		local base_name = vim.fs.basename(full_name)
+-- 		table.insert(name_l, base_name)
+-- 	end
+-- 	return name_l
+-- end
+-- return M
+-- -- this file could be as simple as the example above
+-- -- however, ensuring a unique name makes things a bit more complicated
+
 local M = {}
 local H = {}
 
