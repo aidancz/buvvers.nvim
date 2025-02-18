@@ -116,6 +116,10 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 		end
 	end
 
+	for i, name in ipairs(name_l) do
+		name_l[i] = "○ " .. name
+	end
+
 	return name_l
 end
 
