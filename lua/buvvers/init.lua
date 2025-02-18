@@ -22,11 +22,6 @@ M.config = {
 		winfixwidth = true,
 		winfixheight = true,
 	},
-	buffer_handle_to_buffer_name = function(handle)
-		local full_name = vim.api.nvim_buf_get_name(handle)
-		local base_name = vim.fs.basename(full_name)
-		return base_name
-	end,
 }
 
 M.setup = function(config)
@@ -102,14 +97,13 @@ H.highlight_line = function(lnum)
 end
 
 M.update_buvvers_buf = function()
-	local lines = {}
-	for _, i in ipairs(M.cache.listed_buffer_handles) do
-		table.insert(
-			lines,
-			M.config.buffer_handle_to_buffer_name(i)
-		)
-	end
-	vim.api.nvim_buf_set_lines(M.cache.buvvers_buf_handle, 0, -1, true, lines)
+	vim.api.nvim_buf_set_lines(
+		M.cache.buvvers_buf_handle,
+		0,
+		-1,
+		true,
+		require("buvvers/buffer_name_list").buffer_handle_list_to_buffer_name_list(M.cache.listed_buffer_handles)
+	)
 
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
 	for n, i in ipairs(M.cache.listed_buffer_handles) do
