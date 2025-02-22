@@ -19,6 +19,7 @@ M.config = {
 		wrap = true,
 		-- breakindent = true,
 		-- breakindentopt = "shift:4",
+		list = false,
 		winfixwidth = true,
 		winfixheight = true,
 	},
