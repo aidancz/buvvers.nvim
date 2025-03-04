@@ -4,6 +4,7 @@ local H = {}
 -- # config & setup
 
 M.config = {
+	buvvers_buf_name = "buvvers",
 	buvvers_win = {
 		win = -1,
 		split = "right",
@@ -23,6 +24,10 @@ M.config = {
 		winfixwidth = true,
 		winfixheight = true,
 	},
+	name_prefix = function(buffer_handle)
+		return "- "
+	end,
+	highlight_group_current_buffer = "Visual",
 }
 
 M.setup = function(config)
@@ -32,7 +37,7 @@ end
 -- # cache
 
 M.cache = {
-	listed_buffer_handles = {},
+	listed_buffer_handles = nil,
 	buvvers_buf_handle = nil,
 	buvvers_buf_highlight_extmark_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_extmark"),
 	buvvers_win_handle = nil,
@@ -79,7 +84,33 @@ M.buvvers_buf_set_true = function()
 		-- do nothing
 	else
 		M.cache.buvvers_buf_handle = vim.api.nvim_create_buf(false, true)
+		vim.api.nvim_buf_set_name(M.cache.buvvers_buf_handle, M.config.buvvers_buf_name)
+		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversAttach"})
 	end
+end
+
+M.get_display_name_list = function()
+	local name_l
+
+	name_l = require("buvvers/buffer_name_list")
+		.buffer_handle_list_to_buffer_name_list(
+			M.cache.listed_buffer_handles
+		)
+
+	for i, name in ipairs(name_l) do
+		if name == "" then
+			name_l[i] = "[No Name]"
+		end
+	end
+
+	for i, name in ipairs(name_l) do
+		local prefix = M.config.name_prefix(M.cache.listed_buffer_handles[i])
+		if prefix then
+			name_l[i] = prefix .. name
+		end
+	end
+
+	return name_l
 end
 
 H.highlight_line = function(lnum)
@@ -89,7 +120,7 @@ H.highlight_line = function(lnum)
 		(lnum-1),
 		0,
 		{
-			hl_group = "Visual",
+			hl_group = M.config.highlight_group_current_buffer,
 			hl_eol = true,
 			end_row = (lnum-1) + 1,
 			end_col = 0,
@@ -103,7 +134,7 @@ M.update_buvvers_buf = function()
 		0,
 		-1,
 		true,
-		require("buvvers/buffer_name_list").buffer_handle_list_to_buffer_name_list(M.cache.listed_buffer_handles)
+		M.get_display_name_list()
 	)
 
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
@@ -214,6 +245,28 @@ M.toggle = function()
 		M.close()
 	else
 		M.open()
+	end
+end
+
+M.get_buvvers_buf_handle = function()
+	if M.buvvers_buf_is_valid() then
+		return M.cache.buvvers_buf_handle
+	else
+		return nil
+	end
+end
+
+M.get_current_buf_handle = function()
+	local current_buffer_handle = vim.api.nvim_get_current_buf()
+
+	if
+		M.buvvers_buf_is_valid()
+		and
+		current_buffer_handle == M.cache.buvvers_buf_handle
+	then
+		return M.cache.listed_buffer_handles[vim.fn.line(".")]
+	else
+		return current_buffer_handle
 	end
 end
 

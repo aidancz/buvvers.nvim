@@ -1,16 +1,22 @@
--- local M = {}
--- M.buffer_handle_list_to_buffer_name_list = function(handle_list)
--- 	local name_l = {}
--- 	for _, i in ipairs(handle_list) do
--- 		local full_name = vim.api.nvim_buf_get_name(i)
--- 		local base_name = vim.fs.basename(full_name)
--- 		table.insert(name_l, base_name)
--- 	end
--- 	return name_l
--- end
--- return M
--- -- this file could be as simple as the example above
--- -- however, ensuring a unique name makes things a bit more complicated
+--[[
+
+-- this file could be as simple as this:
+
+local M = {}
+M.buffer_handle_list_to_buffer_name_list = function(handle_list)
+	local name_l = {}
+	for _, i in ipairs(handle_list) do
+		local full_name = vim.api.nvim_buf_get_name(i)
+		local base_name = vim.fs.basename(full_name)
+		table.insert(name_l, base_name)
+	end
+	return name_l
+end
+return M
+
+-- however, ensuring a unique name makes things a bit more complicated
+
+--]]
 
 local M = {}
 local H = {}
@@ -42,7 +48,7 @@ H.file_path_prepend_parent = function(full_path, current_path)
 	return string.reverse(string.sub(full_path_r, 1, i2_r))
 end
 
--- some list processing
+-- some list processing functions
 H.null_p = function(l)
 	return next(l) == nil
 end
@@ -50,12 +56,12 @@ H.car = function(l)
 	return l[1]
 end
 H.cdr = function(l)
-	local l_copy = vim.deepcopy(l, true)
+	local l_copy = vim.deepcopy(l)
 	table.remove(l_copy, 1)
 	return l_copy
 end
 H.cons = function(a, l)
-	local l_copy = vim.deepcopy(l, true)
+	local l_copy = vim.deepcopy(l)
 	table.insert(l_copy, 1, a)
 	return l_copy
 end
@@ -114,16 +120,6 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 		else
 			name_l = H.prepend_once(full_name_l, name_l, name_duplicates_l)
 		end
-	end
-
-	for i, name in ipairs(name_l) do
-		if name == "" then
-			name_l[i] = "[No Name]"
-		end
-	end
-
-	for i, name in ipairs(name_l) do
-		name_l[i] = "○ " .. name
 	end
 
 	return name_l
