@@ -340,7 +340,7 @@ M.get_current_buf_handle = function()
 	then
 		return M.cache.listed_buffer_handles[vim.fn.line(".")]
 	else
-		return current_buffer_handle
+		return nil
 	end
 end
 
