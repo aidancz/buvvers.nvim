@@ -4,12 +4,15 @@ local H = {}
 -- # config & setup
 
 M.config = {
-	buvvers_buf_name = "buvvers",
+	buvvers_buf_name = "[buvvers]",
+	buvvers_buf_opt = {
+		-- modifiable = false,
+	},
 	buvvers_win = {
 		win = -1,
 		split = "right",
 		width = math.ceil(vim.o.columns / 8),
-		focusable = false,
+		-- focusable = false,
 		-- `focusable` has no effect yet, see https://github.com/neovim/neovim/issues/29365
 	},
 	buvvers_win_opt = {
@@ -23,6 +26,7 @@ M.config = {
 		list = false,
 		winfixwidth = true,
 		winfixheight = true,
+		winfixbuf = true,
 	},
 	name_prefix = function(buffer_handle)
 		return "- "
@@ -39,6 +43,7 @@ end
 M.cache = {
 	listed_buffer_handles = nil,
 	buvvers_buf_handle = nil,
+	buvvers_buf_highlight_text_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_text"),
 	buvvers_buf_highlight_extmark_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_extmark"),
 	buvvers_win_handle = nil,
 	buvvers_augroup = vim.api.nvim_create_augroup("buvvers", {clear = true}),
@@ -85,6 +90,9 @@ M.buvvers_buf_set_true = function()
 	else
 		M.cache.buvvers_buf_handle = vim.api.nvim_create_buf(false, true)
 		vim.api.nvim_buf_set_name(M.cache.buvvers_buf_handle, M.config.buvvers_buf_name)
+		for option, value in pairs(M.config.buvvers_buf_opt) do
+			vim.api.nvim_set_option_value(option, value, {buf = M.cache.buvvers_buf_handle})
+		end
 		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversAttach"})
 	end
 end
@@ -105,8 +113,15 @@ M.get_display_name_list = function()
 
 	for i, name in ipairs(name_l) do
 		local prefix = M.config.name_prefix(M.cache.listed_buffer_handles[i])
-		if prefix then
+		if prefix == nil then
+			-- do nothing
+		elseif type(prefix) == "string" then
 			name_l[i] = prefix .. name
+		elseif type(prefix) == "table" then
+			name_l[i] = {
+				prefix,
+				name,
+			}
 		end
 	end
 
@@ -122,6 +137,7 @@ H.highlight_line = function(lnum)
 		{
 			hl_group = M.config.highlight_group_current_buffer,
 			hl_eol = true,
+			priority = 0,
 			end_row = (lnum-1) + 1,
 			end_col = 0,
 		}
@@ -129,14 +145,61 @@ H.highlight_line = function(lnum)
 end
 
 M.update_buvvers_buf = function()
+	local name_l = M.get_display_name_list()
+
+	-- set text
+	vim.api.nvim_set_option_value("modifiable", true, {buf = M.cache.buvvers_buf_handle})
 	vim.api.nvim_buf_set_lines(
 		M.cache.buvvers_buf_handle,
 		0,
 		-1,
 		true,
-		M.get_display_name_list()
+		vim.tbl_map(
+			function(i)
+				if type(i) == "string" then
+					return i
+				elseif type(i) == "table" then
+					local name = ""
+					for _, j in ipairs(i) do
+						if type(j) == "string" then
+							name = name .. j
+						elseif type(j) == "table" then
+							name = name .. j[1]
+						end
+					end
+					return name
+				end
+			end,
+			name_l
+		)
 	)
+	vim.api.nvim_set_option_value("modifiable", false, {buf = M.cache.buvvers_buf_handle})
 
+	-- highlight text
+	for n, i in ipairs(name_l) do
+		if type(i) == "string" then
+			-- do nothing
+		elseif type(i) == "table" then
+			local name = ""
+			for _, j in ipairs(i) do
+				if type(j) == "string" then
+					name = name .. j
+				elseif type(j) == "table" then
+					vim.api.nvim_buf_add_highlight(
+						M.cache.buvvers_buf_handle,
+						M.cache.buvvers_buf_highlight_text_ns_id,
+						j[2],
+						n - 1,
+						#name,
+						#name + #j[1]
+					)
+					name = name .. j[1]
+				end
+			end
+		end
+	end
+
+	-- highlight line
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
 	for n, i in ipairs(M.cache.listed_buffer_handles) do
 		if i == current_buffer_handle then
@@ -174,6 +237,16 @@ M.buvvers_win_set_true = function()
 	end
 end
 
+M.update_buvvers_win = function()
+	local current_buffer_handle = vim.api.nvim_get_current_buf()
+	for n, i in ipairs(M.cache.listed_buffer_handles) do
+		if i == current_buffer_handle then
+			vim.api.nvim_win_set_cursor(M.cache.buvvers_win_handle, {n, 0})
+			break
+		end
+	end
+end
+
 -- # function: main
 
 M.buvvers_open = function()
@@ -181,6 +254,7 @@ M.buvvers_open = function()
 	M.buvvers_buf_set_true()
 	M.update_buvvers_buf()
 	M.buvvers_win_set_true()
+	M.update_buvvers_win()
 end
 
 M.buvvers_close = function()
@@ -267,6 +341,14 @@ M.get_current_buf_handle = function()
 		return M.cache.listed_buffer_handles[vim.fn.line(".")]
 	else
 		return current_buffer_handle
+	end
+end
+
+M.get_buvvers_win_handle = function()
+	if M.buvvers_win_is_valid() then
+		return M.cache.buvvers_win_handle
+	else
+		return nil
 	end
 end
 
