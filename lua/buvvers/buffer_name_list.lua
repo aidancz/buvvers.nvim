@@ -6,9 +6,7 @@ local M = {}
 M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 	local name_l = {}
 	for _, i in ipairs(handle_list) do
-		local full_name = vim.api.nvim_buf_get_name(i)
-		local base_name = vim.fs.basename(full_name)
-		table.insert(name_l, base_name)
+		table.insert(name_l, vim.fn.bufname(i))
 	end
 	return name_l
 end
@@ -107,9 +105,13 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 	local name_l = {}
 	for _, i in ipairs(handle_list) do
 		local full_name = vim.api.nvim_buf_get_name(i)
-		local base_name = vim.fs.basename(full_name)
 		table.insert(full_name_l, full_name)
-		table.insert(name_l, base_name)
+
+		if vim.api.nvim_get_option_value("buftype", {buf = i}) == "" then
+			table.insert(name_l, vim.fs.basename(full_name))
+		else
+			table.insert(name_l, full_name)
+		end
 	end
 
 	local name_duplicates_l
