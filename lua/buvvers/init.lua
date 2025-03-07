@@ -45,6 +45,7 @@ M.cache = {
 	buvvers_buf_handle = nil,
 	buvvers_buf_highlight_text_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_text"),
 	buvvers_buf_highlight_extmark_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_extmark"),
+	buvvers_buf_highlight_extmark_id = nil,
 	buvvers_win_handle = nil,
 	buvvers_augroup = vim.api.nvim_create_augroup("buvvers", {clear = true}),
 }
@@ -128,22 +129,6 @@ M.get_display_name_list = function()
 	return name_l
 end
 
-H.highlight_line = function(lnum)
-	vim.api.nvim_buf_set_extmark(
-		M.cache.buvvers_buf_handle,
-		M.cache.buvvers_buf_highlight_extmark_ns_id,
-		(lnum-1),
-		0,
-		{
-			hl_group = M.config.highlight_group_current_buffer,
-			hl_eol = true,
-			priority = 0,
-			end_row = (lnum-1) + 1,
-			end_col = 0,
-		}
-	)
-end
-
 M.update_buvvers_buf = function()
 	local name_l = M.get_display_name_list()
 
@@ -198,15 +183,45 @@ M.update_buvvers_buf = function()
 			end
 		end
 	end
+end
 
-	-- highlight line
+M.highlight_line = function(lnum)
+	M.cache.buvvers_buf_highlight_extmark_id =
+		vim.api.nvim_buf_set_extmark(
+			M.cache.buvvers_buf_handle,
+			M.cache.buvvers_buf_highlight_extmark_ns_id,
+			(lnum-1),
+			0,
+			{
+				id = M.cache.buvvers_buf_highlight_extmark_id,
+				hl_group = M.config.highlight_group_current_buffer,
+				hl_eol = true,
+				priority = 0,
+				end_row = (lnum-1) + 1,
+				end_col = 0,
+			}
+		)
+end
+
+M.dehighlight_line = function()
+	vim.api.nvim_buf_del_extmark(
+		M.cache.buvvers_buf_handle,
+		M.cache.buvvers_buf_highlight_extmark_ns_id,
+		M.cache.buvvers_buf_highlight_extmark_id
+	)
+end
+
+M.update_buvvers_buf_selection = function()
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
 	for n, i in ipairs(M.cache.listed_buffer_handles) do
 		if i == current_buffer_handle then
-			H.highlight_line(n)
-			break
+			M.highlight_line(n)
+			return
 		end
 	end
+
+	-- if not return
+	M.dehighlight_line()
 end
 
 -- # function: window
@@ -237,7 +252,7 @@ M.buvvers_win_set_true = function()
 	end
 end
 
-M.update_buvvers_win = function()
+M.update_buvvers_win_cursor = function()
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
 	for n, i in ipairs(M.cache.listed_buffer_handles) do
 		if i == current_buffer_handle then
@@ -245,16 +260,28 @@ M.update_buvvers_win = function()
 			break
 		end
 	end
+
+	-- if not return
+	-- do nothing
 end
 
 -- # function: main
 
-M.buvvers_open = function()
+M.buvvers_open1 = function()
 	M.update_listed_buffer_handles()
 	M.buvvers_buf_set_true()
 	M.update_buvvers_buf()
 	M.buvvers_win_set_true()
-	M.update_buvvers_win()
+end
+
+M.buvvers_open2 = function()
+	M.update_buvvers_buf_selection()
+	M.update_buvvers_win_cursor()
+end
+
+M.buvvers_open = function()
+	M.buvvers_open1()
+	M.buvvers_open2()
 end
 
 M.buvvers_close = function()
@@ -278,13 +305,32 @@ end
 
 M.buvvers_autocmd_set_true = function()
 	vim.api.nvim_create_autocmd(
-		{"BufEnter", "BufAdd", "BufDelete"},
+		{"BufAdd"},
+		{
+			group = M.cache.buvvers_augroup,
+			callback = function()
+					M.buvvers_open1()
+			end,
+		})
+	vim.api.nvim_create_autocmd(
+		{"BufDelete"},
 		{
 			group = M.cache.buvvers_augroup,
 			callback = function()
 				vim.schedule(function()
-				-- HACK: wait until the current working directory is set (affect vim.fn.bufname)
-					M.buvvers_open()
+				-- wait until the buffer is deleted
+					M.buvvers_open1()
+				end)
+			end,
+		})
+	vim.api.nvim_create_autocmd(
+		{"BufEnter"},
+		{
+			group = M.cache.buvvers_augroup,
+			callback = function()
+				vim.schedule(function()
+				-- since BufDelete use vim.schedule, BufEnter should too
+					M.buvvers_open2()
 				end)
 			end,
 		})
