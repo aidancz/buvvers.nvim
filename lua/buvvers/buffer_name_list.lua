@@ -131,7 +131,11 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 	local name_duplicates_l
 	while true do
 		name_duplicates_l = H.find_duplicates(name_l)
-		name_duplicates_l = H.multirember("", name_duplicates_l) -- allow duplicate "[No Name]" buffers
+
+		name_duplicates_l = H.multirember("", name_duplicates_l)
+		-- allow multiple unnamed buffers
+		-- unnamed buffers: [No Name] [Quickfix List] ...
+
 		if H.null_p(name_duplicates_l) then
 			break
 		else

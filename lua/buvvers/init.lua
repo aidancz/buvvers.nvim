@@ -99,6 +99,22 @@ M.buvvers_buf_set_true = function()
 	end
 end
 
+H.get_unnamed_buffer_name = function(buffer_handle)
+-- https://github.com/echasnovski/mini.tabline/blob/46108e2d32b0ec8643ee46df14badedb33f3defe/lua/mini/tabline.lua#L340
+	local buftype = vim.api.nvim_get_option_value("buftype", {buf = buffer_handle})
+	if buftype == "" then
+		return "[No Name]"
+	end
+	if buftype == "quickfix" then
+		if vim.fn.getqflist({qfbufnr = true}).qfbufnr == buffer_handle then
+			return "[Quickfix List]"
+		else
+			return "[Location List]"
+		end
+	end
+	return string.format("[%s]", buftype)
+end
+
 M.get_display_name_list = function()
 	local name_l
 
@@ -109,7 +125,7 @@ M.get_display_name_list = function()
 
 	for i, name in ipairs(name_l) do
 		if name == "" then
-			name_l[i] = "[No Name]"
+			name_l[i] = H.get_unnamed_buffer_name(M.cache.listed_buffer_handles[i])
 		end
 	end
 
