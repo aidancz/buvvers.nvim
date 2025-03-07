@@ -32,15 +32,21 @@ H.file_path_prepend_parent = function(full_path, current_path)
 	end
 
 	local before_path_r = string.sub(full_path_r, (i1_r + 1), #full_path_r)
-	local j = string.find(before_path_r, "/", 1, true)
-	if j ~= 1 then
-		j = j - 1
-	elseif j == #before_path_r then
-		-- do nothing
+	local j
+	local j1 = string.find(before_path_r, "/", 1, true)
+	local j2 = string.find(before_path_r, "/", (j1 + 1), true)
+	if j1 ~= 1 then
+	-- file_path_prepend_parent("/a/b/c/def/b/c", "")
+		j = j1 - 1
+	elseif j2 == nil then
+	-- file_path_prepend_parent("/a/b/c/def/b/c", "a/b/c/def/b/c")
+	-- file_path_prepend_parent("C:/Users/jdoe", "Users/jdoe")
+		j = #before_path_r
 	else
-		j = string.find(before_path_r, "/", (j + 1), true)
-		j = j - 1
+	-- file_path_prepend_parent("/a/b/c/def/b/c", "b/c")
+		j = j2 - 1
 	end
+
 	local i2_r = i1_r + j
 
 	return string.reverse(string.sub(full_path_r, 1, i2_r))
@@ -105,11 +111,14 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 	local name_l = {}
 	for _, i in ipairs(handle_list) do
 		local full_name = vim.api.nvim_buf_get_name(i)
-		table.insert(full_name_l, full_name)
-
-		if vim.api.nvim_get_option_value("buftype", {buf = i}) == "" then
+		if vim.uv.fs_stat(full_name) then
+		-- if `full_name` is associated with an actual file
+			full_name = vim.fs.normalize(full_name)
+			-- hi ms-windows users :)
+			table.insert(full_name_l, full_name)
 			table.insert(name_l, vim.fs.basename(full_name))
 		else
+			table.insert(full_name_l, full_name)
 			table.insert(name_l, full_name)
 		end
 	end
