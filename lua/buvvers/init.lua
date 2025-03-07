@@ -305,20 +305,13 @@ end
 
 M.buvvers_autocmd_set_true = function()
 	vim.api.nvim_create_autocmd(
-		{"BufAdd"},
-		{
-			group = M.cache.buvvers_augroup,
-			callback = function()
-					M.buvvers_open1()
-			end,
-		})
-	vim.api.nvim_create_autocmd(
-		{"BufDelete"},
+		{"BufAdd", "BufDelete"},
 		{
 			group = M.cache.buvvers_augroup,
 			callback = function()
 				vim.schedule(function()
-				-- wait until the buffer is deleted
+				-- BufEnter:  https://github.com/neovim/neovim/issues/29419
+				-- BufDelete: wait until the buffer is deleted
 					M.buvvers_open1()
 				end)
 			end,
@@ -329,6 +322,7 @@ M.buvvers_autocmd_set_true = function()
 			group = M.cache.buvvers_augroup,
 			callback = function()
 				vim.schedule(function()
+				-- since BufEnter  use vim.schedule, BufEnter should too
 				-- since BufDelete use vim.schedule, BufEnter should too
 					M.buvvers_open2()
 				end)
