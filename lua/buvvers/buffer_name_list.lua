@@ -111,8 +111,13 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 	local name_l = {}
 	for _, i in ipairs(handle_list) do
 		local full_name = vim.api.nvim_buf_get_name(i)
-		if vim.uv.fs_stat(full_name) then
-		-- if `full_name` is associated with an actual file
+		if
+			vim.api.nvim_get_option_value("buftype", {buf = i}) == ""
+			-- is_normal_buffer
+			or
+			vim.uv.fs_stat(full_name) ~= nil
+			-- is_actual_file
+		then
 			full_name = vim.fs.normalize(full_name)
 			-- hi ms-windows users :)
 			table.insert(full_name_l, full_name)
