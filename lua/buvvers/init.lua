@@ -99,22 +99,57 @@ M.buvvers_buf_set_true = function()
 	end
 end
 
-H.get_unnamed_buffer_name = function(buffer_handle)
--- https://github.com/echasnovski/mini.tabline/blob/46108e2d32b0ec8643ee46df14badedb33f3defe/lua/mini/tabline.lua#L340
-	local buftype = vim.api.nvim_get_option_value("buftype", {buf = buffer_handle})
-	if buftype == "" then
-		return "[No Name]"
-	end
-	if buftype == "quickfix" then
-		if vim.fn.getqflist({qfbufnr = true}).qfbufnr == buffer_handle then
-			return "[Quickfix List]"
-		else
-			return "[Location List]"
-		end
-	end
-	return string.format("[%s]", buftype)
-end
+--[[
 
+-- `name_l` is a list that will be rendered in buvvers buffer
+
+-- example 1:
+{
+	"dwm.c",
+	"buvvers.lua",
+}
+
+-- example 2:
+{
+	{
+		"󰙱 ",
+		"dwm.c",
+	},
+	{
+		"󰢱 ",
+		"buvvers.lua",
+	},
+}
+
+-- example 3:
+{
+	{
+		{"󰙱 ", "DiffAdd"},
+		"dwm.c",
+	},
+	{
+		{"󰢱 ", "DiffChange"},
+		"buvvers.lua",
+	},
+}
+
+-- example 4:
+{
+	{
+		{"󰙱 ", "DiffAdd"},
+		"dwm.c",
+		" love",
+		{" you", "DiffAdd"},
+	},
+	{
+		{"󰢱 ", "DiffChange"},
+		"buvvers.lua",
+		" love",
+		{" you", "DiffChange"},
+	},
+}
+
+--]]
 M.get_display_name_list = function()
 	local name_l
 
@@ -122,12 +157,6 @@ M.get_display_name_list = function()
 		.buffer_handle_list_to_buffer_name_list(
 			M.cache.listed_buffer_handles
 		)
-
-	for i, name in ipairs(name_l) do
-		if name == "" then
-			name_l[i] = H.get_unnamed_buffer_name(M.cache.listed_buffer_handles[i])
-		end
-	end
 
 	for i, name in ipairs(name_l) do
 		local prefix = M.config.name_prefix(M.cache.listed_buffer_handles[i])

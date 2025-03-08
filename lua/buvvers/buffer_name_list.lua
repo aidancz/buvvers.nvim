@@ -106,7 +106,26 @@ H.prepend_once = function(full_name_l, name_l, name_duplicates_l)
 	return l
 end
 
+H.get_unnamed_buffer_name = function(buffer_handle)
+-- https://github.com/echasnovski/mini.tabline/blob/46108e2d32b0ec8643ee46df14badedb33f3defe/lua/mini/tabline.lua#L340
+	local buftype = vim.api.nvim_get_option_value("buftype", {buf = buffer_handle})
+	if buftype == "" then
+		return "[No Name]"
+	end
+	if buftype == "quickfix" then
+		if vim.fn.getqflist({qfbufnr = true}).qfbufnr == buffer_handle then
+			return "[Quickfix List]"
+		else
+			return "[Location List]"
+		end
+	end
+	return string.format("[%s]", buftype)
+end
+
 M.buffer_handle_list_to_buffer_name_list = function(handle_list)
+
+-- # prepare full_name_l & name_l
+
 	local full_name_l = {}
 	local name_l = {}
 	for _, i in ipairs(handle_list) do
@@ -127,6 +146,17 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 			table.insert(name_l, full_name)
 		end
 	end
+-- | buffer                                  | is_normal_buffer | is_actual_file | full_name_l                            | name_l                          |
+-- |-----------------------------------------|------------------|----------------|----------------------------------------|---------------------------------|
+-- | `nvim`                                  | true             | false          | ""                                     | ""                              |
+-- | `nvim cat.txt` (cat.txt does not exist) | true             | false          | "$PWD/cat.txt"                         | "cat.txt"                       |
+-- | `nvim cat.txt` (cat.txt exists)         | true             | true           | "$PWD/cat.txt"                         | "cat.txt"                       |
+-- | `:copen`                                | false            | false          | ""                                     | ""                              |
+-- | `:lopen`                                | false            | false          | ""                                     | ""                              |
+-- | `:terminal`                             | false            | false          | "term://~//112393:/usr/bin/zsh"        | "term://~//112393:/usr/bin/zsh" |
+-- | `:help`                                 | false            | true           | "/usr/share/nvim/runtime/doc/help.txt" | "help.txt"                      |
+
+-- # deduplicate name_l
 
 	local name_duplicates_l
 	while true do
@@ -140,6 +170,14 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 			break
 		else
 			name_l = H.prepend_once(full_name_l, name_l, name_duplicates_l)
+		end
+	end
+
+-- # give unnamed buffer name
+
+	for n, name in ipairs(name_l) do
+		if name == "" then
+			name_l[n] = H.get_unnamed_buffer_name(handle_list[n])
 		end
 	end
 
