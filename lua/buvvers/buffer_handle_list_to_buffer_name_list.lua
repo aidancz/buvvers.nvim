@@ -1,21 +1,3 @@
---[[
-
--- this file could be as simple as this:
-
-local M = {}
-M.buffer_handle_list_to_buffer_name_list = function(handle_list)
-	local name_l = {}
-	for _, i in ipairs(handle_list) do
-		table.insert(name_l, vim.fn.bufname(i))
-	end
-	return name_l
-end
-return M
-
--- however, ensuring a unique name makes things a bit more complicated
-
---]]
-
 local M = {}
 local H = {}
 
@@ -184,4 +166,4 @@ M.buffer_handle_list_to_buffer_name_list = function(handle_list)
 	return name_l
 end
 
-return M
+return M.buffer_handle_list_to_buffer_name_list

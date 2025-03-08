@@ -29,10 +29,15 @@ M.config = {
 		winfixheight = true,
 		winfixbuf = true,
 	},
-	name_prefix = function(buffer_handle)
-		return "- "
-	end,
 	highlight_group_current_buffer = "Visual",
+	buffer_handle_list_to_buffer_name_list = function(handle_l)
+		local name_l
+
+		local default_function = require("buvvers.buffer_handle_list_to_buffer_name_list")
+		name_l = default_function(handle_l)
+
+		return name_l
+	end,
 }
 
 M.setup = function(config)
@@ -99,84 +104,8 @@ M.buvvers_buf_set_true = function()
 	end
 end
 
---[[
-
--- `name_l` is a list that will be rendered in buvvers buffer
-
--- example 1:
-{
-	"dwm.c",
-	"buvvers.lua",
-}
-
--- example 2:
-{
-	{
-		"󰙱 ",
-		"dwm.c",
-	},
-	{
-		"󰢱 ",
-		"buvvers.lua",
-	},
-}
-
--- example 3:
-{
-	{
-		{"󰙱 ", "DiffAdd"},
-		"dwm.c",
-	},
-	{
-		{"󰢱 ", "DiffChange"},
-		"buvvers.lua",
-	},
-}
-
--- example 4:
-{
-	{
-		{"󰙱 ", "DiffAdd"},
-		"dwm.c",
-		" love",
-		{" you", "DiffAdd"},
-	},
-	{
-		{"󰢱 ", "DiffChange"},
-		"buvvers.lua",
-		" love",
-		{" you", "DiffChange"},
-	},
-}
-
---]]
-M.get_display_name_list = function()
-	local name_l
-
-	name_l = require("buvvers/buffer_name_list")
-		.buffer_handle_list_to_buffer_name_list(
-			M.cache.listed_buffer_handles
-		)
-
-	for i, name in ipairs(name_l) do
-		local prefix = M.config.name_prefix(M.cache.listed_buffer_handles[i])
-		if prefix == nil then
-			-- do nothing
-		elseif type(prefix) == "string" then
-			name_l[i] = prefix .. name
-		elseif type(prefix) == "table" then
-			name_l[i] = {
-				prefix,
-				name,
-			}
-		end
-	end
-
-	return name_l
-end
-
 M.update_buvvers_buf = function()
-	local name_l = M.get_display_name_list()
+	local name_l = M.config.buffer_handle_list_to_buffer_name_list(M.cache.listed_buffer_handles)
 
 	-- set text
 	vim.api.nvim_set_option_value("modifiable", true, {buf = M.cache.buvvers_buf_handle})
@@ -408,7 +337,7 @@ M.toggle = function()
 	end
 end
 
-M.get_buvvers_buf_handle = function()
+M.buvvers_get_buf = function()
 	if M.buvvers_buf_is_valid() then
 		return M.cache.buvvers_buf_handle
 	else
@@ -416,21 +345,15 @@ M.get_buvvers_buf_handle = function()
 	end
 end
 
-M.get_current_buf_handle = function()
-	local current_buffer_handle = vim.api.nvim_get_current_buf()
-
-	if
-		M.buvvers_buf_is_valid()
-		and
-		current_buffer_handle == M.cache.buvvers_buf_handle
-	then
-		return M.cache.listed_buffer_handles[vim.fn.line(".")]
+M.buvvers_buf_get_buf = function(lnum)
+	if M.buvvers_buf_is_valid() then
+		return M.cache.listed_buffer_handles[lnum]
 	else
 		return nil
 	end
 end
 
-M.get_buvvers_win_handle = function()
+M.buvvers_get_win = function()
 	if M.buvvers_win_is_valid() then
 		return M.cache.buvvers_win_handle
 	else
