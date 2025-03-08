@@ -274,47 +274,60 @@ end
 
 -- # function: autocmd
 
+M.buvvers_autocmd_is_valid = function()
+	local autocmds = vim.api.nvim_get_autocmds({group = M.cache.buvvers_augroup})
+	return next(autocmds) ~= nil
+end
+
 M.buvvers_autocmd_set_false = function()
-	vim.api.nvim_clear_autocmds({group = M.cache.buvvers_augroup})
+	if M.buvvers_autocmd_is_valid() then
+		vim.api.nvim_clear_autocmds({group = M.cache.buvvers_augroup})
+	else
+		-- do nothing
+	end
 end
 
 M.buvvers_autocmd_set_true = function()
-	vim.api.nvim_create_autocmd(
-		{"BufAdd", "BufDelete"},
-		{
-			group = M.cache.buvvers_augroup,
-			callback = function()
-				vim.schedule(function()
-				-- BufEnter:  https://github.com/neovim/neovim/issues/29419
-				-- BufDelete: wait until the buffer is deleted
-					M.buvvers_open1()
-				end)
-			end,
-		})
-	vim.api.nvim_create_autocmd(
-		{"BufEnter"},
-		{
-			group = M.cache.buvvers_augroup,
-			callback = function()
-				vim.schedule(function()
-				-- since BufEnter  use vim.schedule, BufEnter should too
-				-- since BufDelete use vim.schedule, BufEnter should too
-					M.buvvers_open2()
-				end)
-			end,
-		})
-	vim.api.nvim_create_autocmd(
-		{"WinClosed"},
-		{
-			group = M.cache.buvvers_augroup,
-			callback = function(event)
-				local closing_window_handle = tonumber(event.match)
-				if closing_window_handle == M.cache.buvvers_win_handle then
-					M.buvvers_autocmd_set_false()
-					M.buvvers_close()
-				end
-			end,
-		})
+	if M.buvvers_autocmd_is_valid() then
+		-- do nothing
+	else
+		vim.api.nvim_create_autocmd(
+			{"BufAdd", "BufDelete"},
+			{
+				group = M.cache.buvvers_augroup,
+				callback = function()
+					vim.schedule(function()
+					-- BufEnter:  https://github.com/neovim/neovim/issues/29419
+					-- BufDelete: wait until the buffer is deleted
+						M.buvvers_open1()
+					end)
+				end,
+			})
+		vim.api.nvim_create_autocmd(
+			{"BufEnter"},
+			{
+				group = M.cache.buvvers_augroup,
+				callback = function()
+					vim.schedule(function()
+					-- since BufEnter  use vim.schedule, BufEnter should too
+					-- since BufDelete use vim.schedule, BufEnter should too
+						M.buvvers_open2()
+					end)
+				end,
+			})
+		vim.api.nvim_create_autocmd(
+			{"WinClosed"},
+			{
+				group = M.cache.buvvers_augroup,
+				callback = function(event)
+					local closing_window_handle = tonumber(event.match)
+					if closing_window_handle == M.cache.buvvers_win_handle then
+						M.buvvers_autocmd_set_false()
+						M.buvvers_close()
+					end
+				end,
+			})
+	end
 end
 
 -- # api
