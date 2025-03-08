@@ -1,9 +1,10 @@
 > thank you for your love and support for buvvers! 😊❤️
+>
 > buvvers is stable now, but some config options may change slightly
+>
 > if you run into issues, check this readme
+>
 > i won't modify configurable options unless absolutely necessary—rest assured!
-
-[toc]
 
 # demo
 
@@ -86,6 +87,7 @@ for example, you can run `:lua require("buvvers").open()` to enable buvvers
 > 3. close buvvers window
 >
 > these ways are equivalent
+>
 > they completely clear everything related to buvvers (buffer, window, and autocmd), as if buvvers was never opened before
 
 ## setup example 2:
@@ -208,7 +210,7 @@ the default implementation features:
 2. handle unnamed buffers
 3. handle special buftype
 
-typically, you want to modify the default result
+typically, you want to adjust the default function:
 
 ### setup example 3-3:
 
