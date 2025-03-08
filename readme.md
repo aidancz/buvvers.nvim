@@ -284,6 +284,8 @@ require("buvvers").setup({
 
 ### setup example 3-6:
 
+![20250308-191139-927463760](https://github.com/user-attachments/assets/3a768481-d5f1-44c0-b287-30046590d99d)
+
 if you want to add a prefix that indicate whether a buffer is modified
 
 ```lua
