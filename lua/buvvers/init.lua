@@ -313,6 +313,7 @@ M.buvvers_autocmd_set_true = function()
 					-- BufEnter:  https://github.com/neovim/neovim/issues/29419
 					-- BufDelete: wait until the buffer is deleted
 						M.buvvers_open2()
+						M.buvvers_open3()
 					end)
 				end,
 			})
