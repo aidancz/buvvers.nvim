@@ -105,59 +105,67 @@ M.buvvers_buf_set_true = function()
 	end
 end
 
+M.parse_buffer_name_list = function(name_l)
+	local line_l = {}
+	local highlight_l = {}
+
+	for idx, name in ipairs(name_l) do
+		if name == nil then
+			table.insert(line_l, "")
+		elseif type(name) == "string" then
+			table.insert(line_l, name)
+		elseif type(name) == "table" then
+			local str = ""
+			for _, name_part in ipairs(name) do
+				if name_part == nil then
+					-- do nothing
+				elseif type(name_part) == "string" then
+					str = str .. name_part
+				elseif type(name_part) == "table" then
+					table.insert(
+						highlight_l,
+						{
+							hl_group = name_part[2],
+							line = (idx-1),
+							col_start = #str,
+							col_end = #str + #name_part[1]
+						}
+					)
+					str = str .. name_part[1]
+				end
+			end
+			table.insert(line_l, str)
+		end
+	end
+
+	return line_l, highlight_l
+end
+
 M.update_buvvers_buf = function()
 	local name_l = M.config.buffer_handle_list_to_buffer_name_list(M.cache.listed_buffer_handles)
+	local line_l, highlight_l = M.parse_buffer_name_list(name_l)
 
-	-- set text
+	-- set lines
 	vim.api.nvim_set_option_value("modifiable", true, {buf = M.cache.buvvers_buf_handle})
 	vim.api.nvim_buf_set_lines(
 		M.cache.buvvers_buf_handle,
 		0,
 		-1,
 		true,
-		vim.tbl_map(
-			function(i)
-				if type(i) == "string" then
-					return i
-				elseif type(i) == "table" then
-					local name = ""
-					for _, j in ipairs(i) do
-						if type(j) == "string" then
-							name = name .. j
-						elseif type(j) == "table" then
-							name = name .. j[1]
-						end
-					end
-					return name
-				end
-			end,
-			name_l
-		)
+		line_l
 	)
 	vim.api.nvim_set_option_value("modifiable", false, {buf = M.cache.buvvers_buf_handle})
 
-	-- highlight text
-	for n, i in ipairs(name_l) do
-		if type(i) == "string" then
-			-- do nothing
-		elseif type(i) == "table" then
-			local name = ""
-			for _, j in ipairs(i) do
-				if type(j) == "string" then
-					name = name .. j
-				elseif type(j) == "table" then
-					vim.api.nvim_buf_add_highlight(
-						M.cache.buvvers_buf_handle,
-						M.cache.buvvers_buf_highlight_text_ns_id,
-						j[2],
-						n - 1,
-						#name,
-						#name + #j[1]
-					)
-					name = name .. j[1]
-				end
-			end
-		end
+	-- set highlights
+	for _, i in ipairs(highlight_l) do
+		vim.api.nvim_buf_add_highlight(
+			M.cache.buvvers_buf_handle,
+			M.cache.buvvers_buf_highlight_text_ns_id,
+			i.hl_group,
+			i.line,
+			i.col_start,
+			i.col_end
+		)
 	end
 end
 
