@@ -146,7 +146,7 @@ the function's output is a `buffer_name_list`, for example:
 		"dwm.c",
 	},
 	{
-		{"󰢱 ", "DiffChange"},
+		{"󰢱 ", "DiffDelete"},
 		"buvvers.lua",
 	},
 }
@@ -160,15 +160,40 @@ the function's output is a `buffer_name_list`, for example:
 		{" you", "DiffAdd"},
 	},
 	{
-		{"󰢱 ", "DiffChange"},
+		{"󰢱 ", "DiffDelete"},
 		"buvvers.lua",
 		" love",
-		{" you", "DiffChange"},
+		{" you", "DiffDelete"},
 	},
 }
 ```
 
 the length of `buffer_name_list` should be equal to `buffer_handle_list`, of course
+
+you can view the display result by:
+
+```lua
+require("buvvers").setup({
+	buffer_handle_list_to_buffer_name_list = function(handle_l)
+		return
+		{
+			{
+				{"󰙱 ", "DiffAdd"},
+				"dwm.c",
+				" love",
+				{" you", "DiffAdd"},
+			},
+			{
+				{"󰢱 ", "DiffDelete"},
+				"buvvers.lua",
+				" love",
+				{" you", "DiffDelete"},
+			},
+		}
+	end,
+})
+require("buvvers").open()
+```
 
 ### setup example 3-1:
 
@@ -188,7 +213,7 @@ require("buvvers").setup({
 })
 ```
 
-this implementation has many limitations, but you're encouraged to give it a try anyway
+this implementation has many limitations, but you're encouraged to give it a try :)
 
 ### setup example 3-2:
 
