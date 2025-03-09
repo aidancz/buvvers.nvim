@@ -393,7 +393,9 @@ require("buvvers").open()
 -- enable buvvers at startup
 ```
 
-the reason we need to bind keys in an autocmd is that when buvvers is closed, its buffer is deleted, causing the keybindings to be lost
+the reason why we need "BuvversAttach" autocmd in the example above is:
+
+when buvvers is closed, its buffer is deleted, causing the buffer-local keybindings to be lost
 
 ## setup example 4-2:
 
@@ -453,4 +455,6 @@ require("buvvers").open()
 -- enable buvvers at startup
 ```
 
-the reason we need to set autocmd in an autocmd is that when buvvers is closed, its autocmd is deleted, causing the autocmd to be lost
+the reason why we need "BuvversAttach" autocmd in the example above is:
+
+when buvvers is closed, its autocmd is deleted
