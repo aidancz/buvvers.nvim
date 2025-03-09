@@ -37,10 +37,10 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
 	buvvers_win_opt = {
 	-- buvvers window local options
-		wrap = true,
+		winfixbuf = true,
 		winfixwidth = true,
 		winfixheight = true,
-		winfixbuf = true,
+		wrap = true,
 	},
 
 	highlight_group_current_buffer = "Visual",

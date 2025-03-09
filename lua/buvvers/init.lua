@@ -17,6 +17,9 @@ M.config = {
 		style = "minimal",
 	},
 	buvvers_win_opt = {
+		winfixbuf = true,
+		winfixwidth = true,
+		winfixheight = true,
 		-- foldcolumn = "0",
 		-- signcolumn = "no",
 		-- number = false,
@@ -25,9 +28,7 @@ M.config = {
 		wrap = true,
 		-- breakindent = true,
 		-- breakindentopt = "shift:4",
-		winfixwidth = true,
-		winfixheight = true,
-		winfixbuf = true,
+		-- scrolloff = 3,
 	},
 	highlight_group_current_buffer = "Visual",
 	buffer_handle_list_to_buffer_name_list = function(handle_l)
