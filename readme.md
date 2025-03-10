@@ -20,6 +20,10 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
 ```lua
 {
+	-- these keys are merged via `vim.tbl_deep_extend`, unless otherwise specified
+
+
+
 	buvvers_buf_name = "[buvvers]",
 	-- buvvers buffer name displayed on status line
 
@@ -29,6 +33,7 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
 	buvvers_win = {
 	-- the `config` parameter of `vim.api.nvim_open_win`
+	-- this key is merged via `vim.tbl_extend`
 		win = -1,
 		split = "right",
 		width = math.ceil(vim.o.columns / 8),
@@ -46,15 +51,8 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 	highlight_group_current_buffer = "Visual",
 	-- inside buvvers buffer, the current buffer is highlighted with this highlight group
 
-	buffer_handle_list_to_buffer_name_list = function(handle_l)
+	buffer_handle_list_to_buffer_name_list = require("buvvers.buffer_handle_list_to_buffer_name_list"),
 	-- this is the core function of buvvers, see details below
-		local name_l
-
-		local default_function = require("buvvers.buffer_handle_list_to_buffer_name_list")
-		name_l = default_function(handle_l)
-
-		return name_l
-	end,
 }
 ```
 
@@ -82,7 +80,7 @@ for example, you can run `:lua require("buvvers").open()` to enable buvvers
 >
 > you can disable buvvers by:
 >
-> 1. call `require("buvvers").close`
+> 1. call `require("buvvers").close` or `require("buvvers").toggle`
 > 2. delete buvvers buffer
 > 3. close buvvers window
 >
@@ -105,6 +103,42 @@ require("buvvers").open()
 ```
 
 ## setup example 3:
+
+if you want to change how the buvvers window looks:
+
+```lua
+require("buvvers").setup({
+	buvvers_win = {
+	-- the `config` parameter of `vim.api.nvim_open_win`
+	-- this key is merged via `vim.tbl_extend`
+		win = -1,
+		split = "below",
+		height = 4,
+		style = "minimal",
+	},
+})
+require("buvvers").open()
+```
+
+you can even use a floating window thanks to the power of `vim.api.nvim_open_win`:
+
+```lua
+require("buvvers").setup({
+	buvvers_win = {
+	-- the `config` parameter of `vim.api.nvim_open_win`
+	-- this key is merged via `vim.tbl_extend`
+		relative = "editor",
+		row = 3,
+		col = 3,
+		width = 16,
+		height = 16,
+		style = "minimal",
+	},
+})
+require("buvvers").open()
+```
+
+## setup example 4:
 
 you can customize the display buffer names by modifying `buffer_handle_list_to_buffer_name_list` function
 
@@ -195,7 +229,7 @@ require("buvvers").setup({
 require("buvvers").open()
 ```
 
-### setup example 3-1:
+### setup example 4-1:
 
 now, if you were the author of buvvers, how can you write such function?
 
@@ -215,7 +249,7 @@ require("buvvers").setup({
 
 this implementation has many limitations, but you're encouraged to give it a try :)
 
-### setup example 3-2:
+### setup example 4-2:
 
 buvvers has a default implementation built in, these 2 setups are equivalent:
 
@@ -237,7 +271,7 @@ the default implementation features:
 
 typically, you want to adjust the default function:
 
-### setup example 3-3:
+### setup example 4-3:
 
 if you want to add a "○ " prefix
 
@@ -258,7 +292,7 @@ require("buvvers").setup({
 })
 ```
 
-### setup example 3-4:
+### setup example 4-4:
 
 if you want to add a "󰈔 " prefix, highlight with "ErrorMsg" highlight group
 
@@ -282,7 +316,7 @@ require("buvvers").setup({
 })
 ```
 
-### setup example 3-5:
+### setup example 4-5:
 
 if you want to add a prefix decided by [mini.icons](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-icons.md)
 
@@ -307,7 +341,7 @@ require("buvvers").setup({
 })
 ```
 
-### setup example 3-6:
+### setup example 4-6:
 
 ![20250308-191139-927463760](https://github.com/user-attachments/assets/3a768481-d5f1-44c0-b287-30046590d99d)
 
@@ -351,20 +385,20 @@ to refresh buvvers, use:
 
 note the function name is `require("buvvers").buvvers_open`, not `require("buvvers").open`
 
-i will cover how to set an autocmd to refresh automatically [later](#setup-example-4-2)
+i will cover how to set an autocmd to refresh automatically [later](#setup-example-5-2)
 
-## setup example 4:
+## setup example 5:
 
-## setup example 4-1:
+## setup example 5-1:
 
 the buvvers buffer does not have any keybindings by default
 
-you can add keybindings yourself with these functions and "BuvversAttach" autocmd
+you can add keybindings yourself with these functions
 
-| function                                 | description                                                                      |
-|------------------------------------------|----------------------------------------------------------------------------------|
-| `require("buvvers").buvvers_get_buf`     | get buvvers buffer                                                               |
-| `require("buvvers").buvvers_buf_get_buf` | get the buffer that is displayed in the buvvers buffer at a specific line number |
+| function                                 | description                                                |
+|------------------------------------------|------------------------------------------------------------|
+| `require("buvvers").buvvers_get_buf`     | get buvvers buffer                                         |
+| `require("buvvers").buvvers_buf_get_buf` | inside the buvvers buffer, get the buffer of line number n |
 
 for example, bind "d" to delete buffer and "o" to open buffer:
 
@@ -376,7 +410,7 @@ require("buvvers").setup()
 vim.keymap.set("n", "<leader>bl", require("buvvers").toggle)
 -- bind `<leader>bl` to toggle buvvers
 
-local buvvers_customize = function()
+local add_buffer_keybindings = function()
 	vim.keymap.set(
 		"n",
 		"d",
@@ -405,26 +439,36 @@ local buvvers_customize = function()
 		}
 	)
 end
+vim.api.nvim_create_augroup("buvvers_config", {clear = true})
 vim.api.nvim_create_autocmd(
 	"User",
 	{
-		group = vim.api.nvim_create_augroup("buvvers_customize", {clear = true}),
-		pattern = "BuvversAttach",
-		callback = buvvers_customize,
-	})
--- use "BuvversAttach" to add buffer local keybindings
+		group = "buvvers_config",
+		pattern = "BuvversBufEnabled",
+		callback = add_buffer_keybindings,
+	}
+)
+-- use `BuvversBufEnabled` to add buffer local keybindings
 
 require("buvvers").open()
 -- enable buvvers at startup
 ```
 
-the reason why we need "BuvversAttach" autocmd in the example above is:
+the reason why we need "BuvversBufEnabled" autocmd in this example is:
 
 when buvvers is closed, its buffer is deleted, causing the buffer-local keybindings to be lost
 
-## setup example 4-2:
+these are the supported autocmds:
 
-this is the full setup of the setup mentioned [before](#setup-example-3-6)
+| autocmd               | description                     |
+|-----------------------|---------------------------------|
+| BuvversBufEnabled     | when buvvers buffer is enabled  |
+| BuvversWinEnabled     | when buvvers window is enabled  |
+| BuvversAutocmdEnabled | when buvvers autocmd is enabled |
+
+## setup example 5-2:
+
+this is the full setup of the setup mentioned [before](#setup-example-4-6)
 
 ```lua
 require("buvvers").setup({
@@ -456,30 +500,28 @@ require("buvvers").setup({
 vim.keymap.set("n", "<leader>bl", require("buvvers").toggle)
 -- bind `<leader>bl` to toggle buvvers
 
-local buvvers_customize = function()
+local add_autocmds = function()
 	vim.api.nvim_create_autocmd(
 		{
 			"BufModifiedSet",
 		},
 		{
-			group = vim.api.nvim_create_augroup("buvvers", {clear = false}),
+			group = "buvvers",
 			callback = require("buvvers").buvvers_open,
 		}
 	)
 end
+vim.api.nvim_create_augroup("buvvers_config", {clear = true})
 vim.api.nvim_create_autocmd(
 	"User",
 	{
-		group = vim.api.nvim_create_augroup("buvvers_customize", {clear = true}),
-		pattern = "BuvversAttach",
-		callback = buvvers_customize,
-	})
--- use "BuvversAttach" to add a autocmd that refresh buvvers when BufModifiedSet event is triggered
+		group = "buvvers_config",
+		pattern = "BuvversAutocmdEnabled",
+		callback = add_autocmds,
+	}
+)
+-- use `BuvversAutocmdEnabled` to add a autocmd that refresh buvvers when `BufModifiedSet` event is triggered
 
 require("buvvers").open()
 -- enable buvvers at startup
 ```
-
-the reason why we need "BuvversAttach" autocmd in the example above is:
-
-when buvvers is closed, its autocmd is deleted

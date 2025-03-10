@@ -31,18 +31,19 @@ M.config = {
 		-- scrolloff = 3,
 	},
 	highlight_group_current_buffer = "Visual",
-	buffer_handle_list_to_buffer_name_list = function(handle_l)
-		local name_l
-
-		local default_function = require("buvvers.buffer_handle_list_to_buffer_name_list")
-		name_l = default_function(handle_l)
-
-		return name_l
-	end,
+	buffer_handle_list_to_buffer_name_list = require("buvvers.buffer_handle_list_to_buffer_name_list"),
 }
 
 M.setup = function(config)
-	M.config = vim.tbl_deep_extend("force", M.config, config or {})
+	config = config or {}
+	M.config = vim.tbl_deep_extend("force", M.config, config)
+	M.config = vim.tbl_extend(
+		"force",
+		M.config,
+		{
+			buvvers_win = config.buvvers_win,
+		}
+	)
 end
 
 -- # cache
@@ -87,6 +88,7 @@ end
 M.buvvers_buf_set_false = function()
 	if M.buvvers_buf_is_valid() then
 		vim.api.nvim_buf_delete(M.cache.buvvers_buf_handle, {force = true})
+		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversBufDisabled"})
 	else
 		-- do nothing
 	end
@@ -101,7 +103,7 @@ M.buvvers_buf_set_true = function()
 		for option, value in pairs(M.config.buvvers_buf_opt) do
 			vim.api.nvim_set_option_value(option, value, {buf = M.cache.buvvers_buf_handle})
 		end
-		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversAttach"})
+		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversBufEnabled"})
 	end
 end
 
@@ -220,6 +222,7 @@ end
 M.buvvers_win_set_false = function()
 	if M.buvvers_win_is_valid() then
 		vim.api.nvim_win_close(M.cache.buvvers_win_handle, true)
+		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversWinDisabled"})
 	else
 		-- do nothing
 	end
@@ -233,6 +236,7 @@ M.buvvers_win_set_true = function()
 		for option, value in pairs(M.config.buvvers_win_opt) do
 			vim.api.nvim_set_option_value(option, value, {win = M.cache.buvvers_win_handle})
 		end
+		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversWinEnabled"})
 	end
 end
 
@@ -295,6 +299,7 @@ end
 M.buvvers_autocmd_set_false = function()
 	if M.buvvers_autocmd_is_valid() then
 		vim.api.nvim_clear_autocmds({group = M.cache.buvvers_augroup})
+		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversAutocmdDisabled"})
 	else
 		-- do nothing
 	end
@@ -305,7 +310,10 @@ M.buvvers_autocmd_set_true = function()
 		-- do nothing
 	else
 		vim.api.nvim_create_autocmd(
-			{"BufAdd", "BufDelete"},
+			{
+				"BufAdd",
+				"BufDelete",
+			},
 			{
 				group = M.cache.buvvers_augroup,
 				callback = function()
@@ -316,9 +324,12 @@ M.buvvers_autocmd_set_true = function()
 						M.buvvers_open3()
 					end)
 				end,
-			})
+			}
+		)
 		vim.api.nvim_create_autocmd(
-			{"BufEnter"},
+			{
+				"BufEnter",
+			},
 			{
 				group = M.cache.buvvers_augroup,
 				callback = function()
@@ -328,9 +339,12 @@ M.buvvers_autocmd_set_true = function()
 						M.buvvers_open3()
 					end)
 				end,
-			})
+			}
+		)
 		vim.api.nvim_create_autocmd(
-			{"WinClosed"},
+			{
+				"WinClosed",
+			},
 			{
 				group = M.cache.buvvers_augroup,
 				callback = function(event)
@@ -340,7 +354,9 @@ M.buvvers_autocmd_set_true = function()
 						M.buvvers_close()
 					end
 				end,
-			})
+			}
+		)
+		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversAutocmdEnabled"})
 	end
 end
 
