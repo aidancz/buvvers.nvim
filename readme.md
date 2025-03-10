@@ -104,6 +104,8 @@ require("buvvers").open()
 
 ## setup example 3:
 
+## setup example 3-1:
+
 if you want to change how the buvvers window looks:
 
 ```lua
@@ -119,6 +121,8 @@ require("buvvers").setup({
 })
 require("buvvers").open()
 ```
+
+## setup example 3-2:
 
 you can even use a floating window thanks to the power of `vim.api.nvim_open_win`:
 
@@ -458,6 +462,8 @@ the reason why we need "BuvversBufEnabled" autocmd in this example is:
 
 when buvvers is closed, its buffer is deleted, causing the buffer-local keybindings to be lost
 
+---
+
 these are the supported autocmds:
 
 | autocmd               | description                     |
@@ -525,3 +531,7 @@ vim.api.nvim_create_autocmd(
 require("buvvers").open()
 -- enable buvvers at startup
 ```
+
+the reason why we need "BuvversAutocmdEnabled" autocmd in this example is:
+
+when buvvers is closed, its autocmds are deleted
