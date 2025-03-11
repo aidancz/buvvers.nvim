@@ -20,10 +20,6 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
 ```lua
 {
-	-- these keys are merged via `vim.tbl_deep_extend`, unless otherwise specified
-
-
-
 	buvvers_buf_name = "[buvvers]",
 	-- buvvers buffer name displayed on status line
 
@@ -33,7 +29,6 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
 	buvvers_win = {
 	-- the `config` parameter of `vim.api.nvim_open_win`
-	-- this key is merged via `vim.tbl_extend`
 		win = -1,
 		split = "right",
 		width = math.ceil(vim.o.columns / 8),
@@ -104,39 +99,14 @@ require("buvvers").open()
 
 ## setup example 3:
 
-## setup example 3-1:
-
 if you want to change how the buvvers window looks:
 
 ```lua
 require("buvvers").setup({
 	buvvers_win = {
 	-- the `config` parameter of `vim.api.nvim_open_win`
-	-- this key is merged via `vim.tbl_extend`
-		win = -1,
 		split = "below",
 		height = 4,
-		style = "minimal",
-	},
-})
-require("buvvers").open()
-```
-
-## setup example 3-2:
-
-you can even use a floating window thanks to the power of `vim.api.nvim_open_win`:
-
-```lua
-require("buvvers").setup({
-	buvvers_win = {
-	-- the `config` parameter of `vim.api.nvim_open_win`
-	-- this key is merged via `vim.tbl_extend`
-		relative = "editor",
-		row = 3,
-		col = 3,
-		width = 16,
-		height = 16,
-		style = "minimal",
 	},
 })
 require("buvvers").open()
@@ -393,7 +363,7 @@ i will cover how to set an autocmd to refresh automatically [later](#setup-examp
 
 ## setup example 5:
 
-## setup example 5-1:
+### setup example 5-1:
 
 the buvvers buffer does not have any keybindings by default
 
@@ -472,7 +442,7 @@ these are the supported autocmds:
 | BuvversWinEnabled     | when buvvers window is enabled  |
 | BuvversAutocmdEnabled | when buvvers autocmd is enabled |
 
-## setup example 5-2:
+### setup example 5-2:
 
 this is the full setup of the setup mentioned [before](#setup-example-4-6)
 

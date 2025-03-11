@@ -35,15 +35,7 @@ M.config = {
 }
 
 M.setup = function(config)
-	config = config or {}
-	M.config = vim.tbl_deep_extend("force", M.config, config)
-	M.config = vim.tbl_extend(
-		"force",
-		M.config,
-		{
-			buvvers_win = config.buvvers_win,
-		}
-	)
+	M.config = vim.tbl_deep_extend("force", M.config, config or {})
 end
 
 -- # cache
