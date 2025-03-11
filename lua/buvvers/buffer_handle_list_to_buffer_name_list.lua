@@ -90,6 +90,15 @@ end
 
 H.get_unnamed_buffer_name = function(buffer_handle)
 -- https://github.com/echasnovski/mini.tabline/blob/46108e2d32b0ec8643ee46df14badedb33f3defe/lua/mini/tabline.lua#L340
+
+	-- -- we can reliably get the buffer name if it is displayed in a window
+	-- for _, winid in ipairs(vim.api.nvim_list_wins()) do
+	-- 	if buffer_handle == vim.api.nvim_win_get_buf(winid) then
+	-- 		return vim.api.nvim_eval_statusline("%F", {winid = winid}).str
+	-- 	end
+	-- end
+
+	-- guess otherwise
 	local buftype = vim.api.nvim_get_option_value("buftype", {buf = buffer_handle})
 	if buftype == "" then
 		return "[No Name]"
@@ -101,6 +110,8 @@ H.get_unnamed_buffer_name = function(buffer_handle)
 			return "[Location List]"
 		end
 	end
+
+	-- fallback
 	return string.format("[%s]", buftype)
 end
 
