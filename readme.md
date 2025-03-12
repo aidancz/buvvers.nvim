@@ -247,7 +247,7 @@ typically, you want to adjust the default function:
 
 ### setup example 4-3:
 
-if you want to add a "○ " prefix
+if you want to add a "󰈔 " prefix
 
 ```lua
 require("buvvers").setup({
@@ -258,7 +258,7 @@ require("buvvers").setup({
 		name_l = default_function(handle_l)
 
 		for n, name in ipairs(name_l) do
-			name_l[n] = "○ " .. name
+			name_l[n] = "󰈔 " .. name
 		end
 
 		return name_l
