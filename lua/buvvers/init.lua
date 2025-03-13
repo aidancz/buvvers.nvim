@@ -16,6 +16,7 @@ M.config = {
 		-- `focusable` has no effect yet, see https://github.com/neovim/neovim/issues/29365
 		style = "minimal",
 	},
+	buvvers_win_enter = false,
 	buvvers_win_opt = {
 		winfixbuf = true,
 		winfixwidth = true,
@@ -224,7 +225,11 @@ M.buvvers_win_set_true = vim.schedule_wrap(function()
 	if M.buvvers_win_is_valid() then
 		-- do nothing
 	else
-		M.cache.buvvers_win_handle = vim.api.nvim_open_win(M.cache.buvvers_buf_handle, false, M.config.buvvers_win)
+		M.cache.buvvers_win_handle = vim.api.nvim_open_win(
+			M.cache.buvvers_buf_handle,
+			M.config.buvvers_win_enter,
+			M.config.buvvers_win
+		)
 		-- because of `textlock` and `vim.api.nvim_open_win`, we need to wrap these functions via `vim.schedule_wrap`
 		-- example minimal.lua:
 		--

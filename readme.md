@@ -35,6 +35,9 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 		style = "minimal",
 	},
 
+	buvvers_win_enter = false,
+	-- if true, let buvvers window get focus after being opened, otherwise focus will stay in current window
+
 	buvvers_win_opt = {
 	-- buvvers window local options
 		winfixbuf = true,
@@ -99,6 +102,8 @@ require("buvvers").open()
 
 ## setup example 3:
 
+### setup example 3-1:
+
 if you want to change how the buvvers window looks:
 
 ```lua
@@ -109,6 +114,51 @@ require("buvvers").setup({
 		height = 4,
 	},
 })
+require("buvvers").open()
+```
+
+### setup example 3-2:
+
+you can even use a floating window thanks to the power of `vim.api.nvim_open_win`
+
+```lua
+require("buvvers").setup({
+	buvvers_win = {
+	-- the `config` parameter of `vim.api.nvim_open_win`
+		relative = "editor",
+		row = 3,
+		col = 3,
+		width = 40,
+		height = 20,
+		style = "minimal",
+	},
+	buvvers_win_enter = true,
+})
+require("buvvers").open()
+```
+
+however, this won't work as expected because the config table is merged via `vim.tbl_deep_extend`, not `vim.tbl_extend`
+
+instead, we should:
+
+```lua
+require("buvvers").setup()
+require("buvvers").config = vim.tbl_extend(
+	"force",
+	require("buvvers").config,
+	{
+		buvvers_win = {
+		-- the `config` parameter of `vim.api.nvim_open_win`
+			relative = "editor",
+			row = 3,
+			col = 3,
+			width = 40,
+			height = 20,
+			style = "minimal",
+		},
+		buvvers_win_enter = true,
+	}
+)
 require("buvvers").open()
 ```
 
