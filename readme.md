@@ -301,7 +301,7 @@ typically, you want to adjust the default function:
 
 ### setup example 4-3:
 
-if you want to add a "󰈔 " prefix
+if you want to add a `󰈔 ` prefix
 
 ```lua
 require("buvvers").setup({
@@ -322,7 +322,7 @@ require("buvvers").setup({
 
 ### setup example 4-4:
 
-if you want to add a "󰈔 " prefix, highlight with "ErrorMsg" highlight group
+if you want to add a `󰈔 ` prefix, highlight with "ErrorMsg" highlight group
 
 ```lua
 require("buvvers").setup({
