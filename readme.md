@@ -100,6 +100,10 @@ require("buvvers").open()
 -- enable buvvers at startup
 ```
 
+okay! you can use buvvers happily now!
+
+the following content provides detailed customization information for buvvers, which you can safely ignore
+
 ## setup example 3:
 
 ### setup example 3-1:
