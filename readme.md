@@ -74,7 +74,7 @@ you can call these functions:
 
 for example, you can run `:lua require("buvvers").open()` to enable buvvers
 
-> note:
+> [!NOTE]
 >
 > you can disable buvvers by:
 >
@@ -96,9 +96,13 @@ require("buvvers").setup()
 vim.keymap.set("n", "<leader>bl", require("buvvers").toggle)
 -- bind `<leader>bl` to toggle buvvers
 
-require("buvvers").open()
+vim.schedule(require("buvvers").open)
 -- enable buvvers at startup
 ```
+
+> [!NOTE]
+>
+> since `vim.api.nvim_open_win` is not allowed when `textlock` is active, we need to wrap `require("buvvers").open` with `vim.schedule` during startup, otherwise `config.buvvers_win_enter` will have no effect
 
 okay! you can use buvvers happily now!
 
@@ -118,7 +122,7 @@ require("buvvers").setup({
 		height = 4,
 	},
 })
-require("buvvers").open()
+vim.schedule(require("buvvers").open)
 ```
 
 ### setup example 3-2:
@@ -138,7 +142,7 @@ require("buvvers").setup({
 	},
 	buvvers_win_enter = true,
 })
-require("buvvers").open()
+vim.schedule(require("buvvers").open)
 ```
 
 however, this won't work as expected because the config table is merged via `vim.tbl_deep_extend`, not `vim.tbl_extend`
@@ -163,7 +167,7 @@ require("buvvers").config = vim.tbl_extend(
 		buvvers_win_enter = true,
 	}
 )
-require("buvvers").open()
+vim.schedule(require("buvvers").open)
 ```
 
 ## setup example 4:
@@ -254,7 +258,7 @@ require("buvvers").setup({
 		}
 	end,
 })
-require("buvvers").open()
+vim.schedule(require("buvvers").open)
 ```
 
 ### setup example 4-1:
@@ -478,7 +482,7 @@ vim.api.nvim_create_autocmd(
 )
 -- use `BuvversBufEnabled` to add buffer local keybindings
 
-require("buvvers").open()
+vim.schedule(require("buvvers").open)
 -- enable buvvers at startup
 ```
 
@@ -552,7 +556,7 @@ vim.api.nvim_create_autocmd(
 )
 -- use `BuvversAutocmdEnabled` to add a autocmd that refresh buvvers when `BufModifiedSet` event is triggered
 
-require("buvvers").open()
+vim.schedule(require("buvvers").open)
 -- enable buvvers at startup
 ```
 

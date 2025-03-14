@@ -183,11 +183,15 @@ M.highlight_line = function(lnum)
 end
 
 M.dehighlight_line = function()
-	vim.api.nvim_buf_del_extmark(
-		M.cache.buvvers_buf_handle,
-		M.cache.buvvers_buf_highlight_extmark_ns_id,
-		M.cache.buvvers_buf_highlight_extmark_id
-	)
+	if M.cache.buvvers_buf_highlight_extmark_id == nil then
+		-- do nothing
+	else
+		vim.api.nvim_buf_del_extmark(
+			M.cache.buvvers_buf_handle,
+			M.cache.buvvers_buf_highlight_extmark_ns_id,
+			M.cache.buvvers_buf_highlight_extmark_id
+		)
+	end
 end
 
 M.update_buvvers_buf_selection = function()
@@ -212,16 +216,16 @@ M.buvvers_win_is_valid = function()
 		vim.api.nvim_win_is_valid(M.cache.buvvers_win_handle)
 end
 
-M.buvvers_win_set_false = vim.schedule_wrap(function()
+M.buvvers_win_set_false = function()
 	if M.buvvers_win_is_valid() then
 		vim.api.nvim_win_close(M.cache.buvvers_win_handle, true)
 		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversWinDisabled"})
 	else
 		-- do nothing
 	end
-end)
+end
 
-M.buvvers_win_set_true = vim.schedule_wrap(function()
+M.buvvers_win_set_true = function()
 	if M.buvvers_win_is_valid() then
 		-- do nothing
 	else
@@ -230,8 +234,10 @@ M.buvvers_win_set_true = vim.schedule_wrap(function()
 			M.config.buvvers_win_enter,
 			M.config.buvvers_win
 		)
-		-- because of `textlock` and `vim.api.nvim_open_win`, we need to wrap these functions via `vim.schedule_wrap`
-		-- example minimal.lua:
+		-- because `vim.api.nvim_open_win` is not allowed when `textlock` is active
+		-- this function need to be wrapped during startup
+		--
+		-- e.g. run `nvim --clean -u minimal.lua`, where `minimal.lua` is:
 		--
 		-- vim.api.nvim_open_win(
 		-- 	0,
@@ -247,9 +253,9 @@ M.buvvers_win_set_true = vim.schedule_wrap(function()
 		end
 		vim.api.nvim_exec_autocmds("User", {pattern = "BuvversWinEnabled"})
 	end
-end)
+end
 
-M.update_buvvers_win_cursor = vim.schedule_wrap(function()
+M.update_buvvers_win_cursor = function()
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
 	for n, i in ipairs(M.cache.listed_buffer_handles) do
 		if i == current_buffer_handle then
@@ -260,7 +266,7 @@ M.update_buvvers_win_cursor = vim.schedule_wrap(function()
 
 	-- if not return
 	-- do nothing
-end)
+end
 
 -- # function: main
 
