@@ -430,6 +430,7 @@ you can add keybindings yourself with these functions
 | function                                 | description                                                |
 |------------------------------------------|------------------------------------------------------------|
 | `require("buvvers").buvvers_get_buf`     | get buvvers buffer                                         |
+| `require("buvvers").buvvers_get_win`     | get buvvers window                                         |
 | `require("buvvers").buvvers_buf_get_buf` | inside the buvvers buffer, get the buffer of line number n |
 
 for example, bind "d" to delete buffer and "o" to open buffer:
