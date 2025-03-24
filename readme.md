@@ -564,3 +564,24 @@ vim.schedule(require("buvvers").open)
 the reason why we need "BuvversAutocmdEnabled" autocmd in this example is:
 
 when buvvers is closed, its autocmds are deleted
+
+## Setup Example 6:
+
+Binding `q` to auto-close the buvvers window:
+
+```lua
+-- Add a buffer option, to set the filetype to `buvvers`
+require("buvvers").setup({
+    buvvers_buf_opt = {
+        filetype = "buvvers"
+    }
+})
+
+-- Add a FileType auto command, binding `q` to `:close<CR>`
+vim.api.nvim_create_autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("QAutoCloseBuvver", { clear = true }),
+	pattern = { "buvvers" },
+	desc = "Auto-close the buvver window with `q`",
+	command = "nnoremap <buffer> <silent> q :close<CR>",
+})
+```
