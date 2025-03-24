@@ -329,6 +329,7 @@ M.buvvers_autocmd_set_true = function()
 			{
 				"BufAdd",
 				"BufDelete",
+				"BufFilePost",
 			},
 			{
 				group = M.cache.buvvers_augroup,
