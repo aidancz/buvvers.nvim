@@ -25,6 +25,7 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
 	buvvers_buf_opt = {
 	-- buvvers buffer local options
+		filetype = "buvvers",
 	},
 
 	buvvers_win = {
@@ -433,9 +434,12 @@ you can add keybindings yourself with these functions
 | `require("buvvers").buvvers_get_win`     | get buvvers window                                         |
 | `require("buvvers").buvvers_buf_get_buf` | inside the buvvers buffer, get the buffer of line number n |
 
-for example, bind "d" to delete buffer and "o" to open buffer:
+for example:
 
-> [mini.bufremove](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-bufremove.md) is required
+- bind "q" to disable buvvers
+- bind "d" to delete buffer
+	> [mini.bufremove](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-bufremove.md) is required
+- bind "o" to open buffer
 
 ```lua
 require("buvvers").setup()
@@ -444,6 +448,15 @@ vim.keymap.set("n", "<leader>bl", require("buvvers").toggle)
 -- bind `<leader>bl` to toggle buvvers
 
 local add_buffer_keybindings = function()
+	vim.keymap.set(
+		"n",
+		"q",
+		require("buvvers").close,
+		{
+			buffer = require("buvvers").buvvers_get_buf(),
+			nowait = true,
+		}
+	)
 	vim.keymap.set(
 		"n",
 		"d",
@@ -564,24 +577,3 @@ vim.schedule(require("buvvers").open)
 the reason why we need "BuvversAutocmdEnabled" autocmd in this example is:
 
 when buvvers is closed, its autocmds are deleted
-
-## Setup Example 6:
-
-Binding `q` to auto-close the buvvers window:
-
-```lua
--- Add a buffer option, to set the filetype to `buvvers`
-require("buvvers").setup({
-    buvvers_buf_opt = {
-        filetype = "buvvers"
-    }
-})
-
--- Add a FileType auto command, binding `q` to `:close<CR>`
-vim.api.nvim_create_autocmd("FileType", {
-	group = vim.api.nvim_create_augroup("QAutoCloseBuvver", { clear = true }),
-	pattern = { "buvvers" },
-	desc = "Auto-close the buvver window with `q`",
-	command = "nnoremap <buffer> <silent> q :close<CR>",
-})
-```

@@ -7,6 +7,7 @@ M.config = {
 	buvvers_buf_name = "[buvvers]",
 	buvvers_buf_opt = {
 		-- modifiable = false,
+		filetype = "buvvers",
 	},
 	buvvers_win = {
 		win = -1,
