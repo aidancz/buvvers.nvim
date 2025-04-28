@@ -46,8 +46,8 @@ M.cache = {
 	listed_buffer_handles = nil,
 	buvvers_buf_handle = nil,
 	buvvers_buf_highlight_text_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_text"),
-	buvvers_buf_highlight_extmark_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_extmark"),
-	buvvers_buf_highlight_extmark_id = nil,
+	buvvers_buf_highlight_line_ns_id = vim.api.nvim_create_namespace("buvvers_buf_highlight_line"),
+	buvvers_buf_highlight_line_id = nil,
 	buvvers_win_handle = nil,
 	buvvers_augroup = vim.api.nvim_create_augroup("buvvers", {clear = true}),
 }
@@ -154,26 +154,29 @@ M.update_buvvers_buf = function()
 
 	-- set highlights
 	for _, i in ipairs(highlight_l) do
-		vim.api.nvim_buf_add_highlight(
+		vim.api.nvim_buf_set_extmark(
 			M.cache.buvvers_buf_handle,
 			M.cache.buvvers_buf_highlight_text_ns_id,
-			i.hl_group,
 			i.line,
 			i.col_start,
-			i.col_end
+			{
+				hl_group = i.hl_group,
+				end_row = i.line,
+				end_col = i.col_end,
+			}
 		)
 	end
 end
 
 M.highlight_line = function(lnum)
-	M.cache.buvvers_buf_highlight_extmark_id =
+	M.cache.buvvers_buf_highlight_line_id =
 		vim.api.nvim_buf_set_extmark(
 			M.cache.buvvers_buf_handle,
-			M.cache.buvvers_buf_highlight_extmark_ns_id,
+			M.cache.buvvers_buf_highlight_line_ns_id,
 			(lnum-1),
 			0,
 			{
-				id = M.cache.buvvers_buf_highlight_extmark_id,
+				id = M.cache.buvvers_buf_highlight_line_id,
 				hl_group = M.config.highlight_group_current_buffer,
 				hl_eol = true,
 				priority = 0,
@@ -184,13 +187,13 @@ M.highlight_line = function(lnum)
 end
 
 M.dehighlight_line = function()
-	if M.cache.buvvers_buf_highlight_extmark_id == nil then
+	if M.cache.buvvers_buf_highlight_line_id == nil then
 		-- do nothing
 	else
 		vim.api.nvim_buf_del_extmark(
 			M.cache.buvvers_buf_handle,
-			M.cache.buvvers_buf_highlight_extmark_ns_id,
-			M.cache.buvvers_buf_highlight_extmark_id
+			M.cache.buvvers_buf_highlight_line_ns_id,
+			M.cache.buvvers_buf_highlight_line_id
 		)
 	end
 end
