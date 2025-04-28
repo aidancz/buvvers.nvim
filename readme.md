@@ -1,18 +1,10 @@
-> thank you for your love and support for buvvers! 😊❤️
->
-> buvvers is stable now, but some config options may change slightly
->
-> if you run into issues, check this readme
->
-> i won't modify configurable options unless absolutely necessary—rest assured!
-
 # demo
 
 [demo](https://github.com/user-attachments/assets/d03747f9-9188-404f-a172-a570616b1e12)
 
-display buffers vertically
+display buffers vertically (use a floating window by default)
 
-minimal, robust, highly customizable, easily modifiable source code
+minimal and robust
 
 inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
@@ -20,27 +12,36 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
 ```lua
 {
-	buvvers_buf_name = "[buvvers]",
-	-- buvvers buffer name displayed on status line
+	buf_name = "[buvvers]",
+	-- buffer name displayed on status line
 
-	buvvers_buf_opt = {
-	-- buvvers buffer local options
+	buf_opt = {
+	-- buffer local options
 		filetype = "buvvers",
 	},
 
-	buvvers_win = {
-	-- the `config` parameter of `vim.api.nvim_open_win`
-		win = -1,
-		split = "right",
-		width = math.ceil(vim.o.columns / 8),
-		style = "minimal",
-	},
+	win_open = function(buf)
+	-- how should buvvers open its window?
+		return
+		vim.api.nvim_open_win(
+			buf,
+			false,
+			{
+				relative = "editor",
+				anchor = "NE",
+				border = "none",
+				row = 0,
+				col = vim.o.columns,
+				width = math.floor(vim.o.columns / 8),
+				height = vim.o.lines - 2,
+				style = "minimal",
+				-- focusable = false,
+			}
+		)
+	end,
 
-	buvvers_win_enter = false,
-	-- if true, let buvvers window get focus after being opened, otherwise focus will stay in current window
-
-	buvvers_win_opt = {
-	-- buvvers window local options
+	win_opt = {
+	-- window local options
 		winfixbuf = true,
 		winfixwidth = true,
 		winfixheight = true,
@@ -97,13 +98,9 @@ require("buvvers").setup()
 vim.keymap.set("n", "<leader>bl", require("buvvers").toggle)
 -- bind `<leader>bl` to toggle buvvers
 
-vim.schedule(require("buvvers").open)
+require("buvvers").open()
 -- enable buvvers at startup
 ```
-
-> [!NOTE]
->
-> since `vim.api.nvim_open_win` is not allowed when `textlock` is active, we need to wrap `require("buvvers").open` with `vim.schedule` during startup, otherwise `config.buvvers_win_enter` will have no effect
 
 okay! you can use buvvers happily now!
 
@@ -117,58 +114,49 @@ if you want to change how the buvvers window looks:
 
 ```lua
 require("buvvers").setup({
-	buvvers_win = {
-	-- the `config` parameter of `vim.api.nvim_open_win`
-		split = "below",
-		height = 4,
-	},
+	win_open = function(buf)
+		return
+		vim.api.nvim_open_win(
+			buf,
+			false,
+			{
+				relative = "editor",
+				anchor = "SE",
+				border = "bold",
+				row = vim.o.lines - 2,
+				col = vim.o.columns,
+				width = 20,
+				height = 8,
+				style = "minimal",
+				-- focusable = false,
+			}
+		)
+	end,
 })
-vim.schedule(require("buvvers").open)
+require("buvvers").open()
 ```
 
 ### setup example 3-2:
 
-you can even use a floating window thanks to the power of `vim.api.nvim_open_win`
+you can use a split window if you want
 
 ```lua
 require("buvvers").setup({
-	buvvers_win = {
-	-- the `config` parameter of `vim.api.nvim_open_win`
-		relative = "editor",
-		row = 3,
-		col = 3,
-		width = 40,
-		height = 20,
-		style = "minimal",
-	},
-	buvvers_win_enter = true,
+	win_open = function(buf)
+		return
+		vim.api.nvim_open_win(
+			buf,
+			false,
+			{
+				win = -1,
+				split = "right",
+				width = math.floor(vim.o.columns / 8),
+				style = "minimal",
+			}
+		)
+	end,
 })
-vim.schedule(require("buvvers").open)
-```
-
-however, this won't work as expected because the config table is merged via `vim.tbl_deep_extend`, not `vim.tbl_extend`
-
-instead, we should:
-
-```lua
-require("buvvers").setup()
-require("buvvers").config = vim.tbl_extend(
-	"force",
-	require("buvvers").config,
-	{
-		buvvers_win = {
-		-- the `config` parameter of `vim.api.nvim_open_win`
-			relative = "editor",
-			row = 3,
-			col = 3,
-			width = 40,
-			height = 20,
-			style = "minimal",
-		},
-		buvvers_win_enter = true,
-	}
-)
-vim.schedule(require("buvvers").open)
+require("buvvers").open()
 ```
 
 ## setup example 4:
@@ -259,7 +247,7 @@ require("buvvers").setup({
 		}
 	end,
 })
-vim.schedule(require("buvvers").open)
+require("buvvers").open()
 ```
 
 ### setup example 4-1:
@@ -362,7 +350,7 @@ require("buvvers").setup({
 		name_l = default_function(handle_l)
 
 		for n, name in ipairs(name_l) do
-			local icon, hl = MiniIcons.get("file", name)
+			local icon, hl = require("mini.icons").get("file", name)
 			name_l[n] = {
 				{icon .. " ", hl},
 				name,

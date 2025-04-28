@@ -25,6 +25,7 @@ M.config = {
 				height = vim.o.lines - 2,
 				style = "minimal",
 				focusable = false,
+				zindex = 1,
 			}
 		)
 	end,
@@ -43,6 +44,8 @@ M.config = {
 		-- breakindentopt = "shift:4",
 		-- scrolloff = 3,
 	},
+	autocmd_refresh_event = nil,
+	autocmd_winclosed_do = "refresh",
 	highlight_group_current_buffer = "Visual",
 	buffer_handle_list_to_buffer_name_list = require("buvvers.buffer_handle_list_to_buffer_name_list"),
 }
@@ -54,7 +57,7 @@ end
 -- # cache
 
 M.cache = {
-	listed_buffer_handles = nil,
+	listed_bufs = nil,
 	buf_handle = nil,
 	buf_hl_text_ns_id = vim.api.nvim_create_namespace("buvvers_buf_hl_text"),
 	buf_hl_line_ns_id = vim.api.nvim_create_namespace("buvvers_buf_hl_line"),
@@ -65,20 +68,21 @@ M.cache = {
 
 -- # function: data
 
-M.listed_buffer_handles_update = function()
-	M.cache.listed_buffer_handles = {}
-
+M.get_listed_bufs = function()
+	local listed_bufs = {}
 	for _, i in ipairs(vim.api.nvim_list_bufs()) do
 		if vim.fn.buflisted(i) ~= 0 then
 		-- any buffer has two independent flags: loaded and listed
 		-- loaded is related to memory, whether the buffer is actual existent
 		-- listed is related to visual, whether the buffer want to be seen
-			table.insert(
-				M.cache.listed_buffer_handles,
-				i
-			)
+			table.insert(listed_bufs, i)
 		end
 	end
+	return listed_bufs
+end
+
+M.listed_bufs_update = function()
+	M.cache.listed_bufs = M.get_listed_bufs()
 end
 
 -- # function: buffer
@@ -107,7 +111,7 @@ M.buf_set_true = function()
 		for option, value in pairs(M.config.buf_opt) do
 			vim.api.nvim_set_option_value(option, value, {buf = M.cache.buf_handle})
 		end
-		M.config.buf_hook()
+		M.config.buf_hook(M.cache.buf_handle)
 	end
 end
 
@@ -148,7 +152,7 @@ M.parse_buffer_name_list = function(name_l)
 end
 
 M.buf_update = function()
-	local name_l = M.config.buffer_handle_list_to_buffer_name_list(M.cache.listed_buffer_handles)
+	local name_l = M.config.buffer_handle_list_to_buffer_name_list(M.cache.listed_bufs)
 	local line_l, highlight_l = M.parse_buffer_name_list(name_l)
 
 	-- set lines
@@ -210,7 +214,7 @@ end
 
 M.buf_hl_line_update = function()
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
-	for n, i in ipairs(M.cache.listed_buffer_handles) do
+	for n, i in ipairs(M.cache.listed_bufs) do
 		if i == current_buffer_handle then
 			M.buf_hl_line(n)
 			return
@@ -253,7 +257,7 @@ end
 
 M.win_cursor_update = function()
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
-	for n, i in ipairs(M.cache.listed_buffer_handles) do
+	for n, i in ipairs(M.cache.listed_bufs) do
 		if i == current_buffer_handle then
 			vim.api.nvim_win_set_cursor(M.cache.win_handle, {n, 0})
 			break
@@ -272,7 +276,7 @@ M.pure_open1 = function()
 end
 
 M.pure_open2 = function()
-	M.listed_buffer_handles_update()
+	M.listed_bufs_update()
 	M.buf_update()
 end
 
@@ -352,6 +356,18 @@ M.autocmd_set_true = function()
 				end,
 			}
 		)
+		if M.config.autocmd_refresh_event ~= nil then
+			vim.api.nvim_create_autocmd(
+				M.config.autocmd_refresh_event,
+				{
+					group = M.cache.augroup,
+					callback = function()
+						M.pure_open2()
+						M.pure_open3()
+					end,
+				}
+			)
+		end
 		vim.api.nvim_create_autocmd(
 			{
 				"WinClosed",
@@ -361,8 +377,11 @@ M.autocmd_set_true = function()
 				callback = function(event)
 					local closing_window_handle = tonumber(event.match)
 					if closing_window_handle == M.cache.win_handle then
-						M.autocmd_set_false()
-						M.pure_close()
+						if M.config.autocmd_winclosed_do == "refresh" then
+							vim.schedule(M.open)
+						else
+							M.close()
+						end
 					end
 				end,
 			}
