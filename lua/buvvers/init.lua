@@ -45,7 +45,7 @@ M.config = {
 		-- scrolloff = 3,
 	},
 	win_hook = function(win) end,
-	autocmd_refresh_event = nil,
+	autocmd_additional_refresh_event = nil,
 	autocmd_winclosed_do = "refresh",
 	autocmd_hook = function(augroup) end,
 	highlight_group_current_buffer = "Visual",
@@ -357,9 +357,9 @@ M.autocmd_set_true = function()
 				end,
 			}
 		)
-		if M.config.autocmd_refresh_event ~= nil then
+		if M.config.autocmd_additional_refresh_event ~= nil then
 			vim.api.nvim_create_autocmd(
-				M.config.autocmd_refresh_event,
+				M.config.autocmd_additional_refresh_event,
 				{
 					group = M.cache.augroup,
 					callback = function()
