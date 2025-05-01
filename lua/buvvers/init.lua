@@ -44,8 +44,10 @@ M.config = {
 		-- breakindentopt = "shift:4",
 		-- scrolloff = 3,
 	},
+	win_hook = function(win) end,
 	autocmd_refresh_event = nil,
 	autocmd_winclosed_do = "refresh",
+	autocmd_hook = function(augroup) end,
 	highlight_group_current_buffer = "Visual",
 	buffer_handle_list_to_buffer_name_list = require("buvvers.buffer_handle_list_to_buffer_name_list"),
 }
@@ -246,12 +248,11 @@ M.win_set_true = function()
 	if M.win_is_valid() then
 		-- do nothing
 	else
-		M.cache.win_handle = M.config.win_open(
-			M.cache.buf_handle
-		)
+		M.cache.win_handle = M.config.win_open(M.cache.buf_handle)
 		for option, value in pairs(M.config.win_opt) do
 			vim.api.nvim_set_option_value(option, value, {win = M.cache.win_handle})
 		end
+		M.config.win_hook(M.cache.win_handle)
 	end
 end
 
@@ -362,8 +363,10 @@ M.autocmd_set_true = function()
 				{
 					group = M.cache.augroup,
 					callback = function()
-						M.pure_open2()
-						M.pure_open3()
+						vim.schedule(function()
+							M.pure_open2()
+							M.pure_open3()
+						end)
 					end,
 				}
 			)
@@ -386,6 +389,7 @@ M.autocmd_set_true = function()
 				end,
 			}
 		)
+		M.config.autocmd_hook(M.cache.augroup)
 	end
 end
 
