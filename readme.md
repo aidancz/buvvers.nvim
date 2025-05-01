@@ -1,6 +1,6 @@
 # demo
 
-[demo](https://github.com/user-attachments/assets/d03747f9-9188-404f-a172-a570616b1e12)
+[demo](https://github.com/user-attachments/assets/498bfeac-d643-4879-9ca9-5767112279c0)
 
 display buffers vertically (use a floating window by default)
 
