@@ -10,6 +10,8 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 
 # default config
 
+<details>
+
 ```lua
 {
 	buf_name = "[buvvers]",
@@ -72,6 +74,8 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 	-- this is the core function of buvvers, see details below
 }
 ```
+
+</details>
 
 # setup
 
@@ -264,7 +268,7 @@ require("buvvers").setup({
 require("buvvers").open()
 ```
 
-## setup-example-6
+## setup example 6:
 
 you can customize the display buffer names by modifying `buffer_handle_list_to_buffer_name_list` function
 
@@ -461,9 +465,9 @@ require("buvvers").setup({
 require("buvvers").open()
 ```
 
-![20250308-191139-927463760](https://github.com/user-attachments/assets/3a768481-d5f1-44c0-b287-30046590d99d)
-
 if you want to add a prefix that indicate whether a buffer is modified
+
+![20250308-191139-927463760](https://github.com/user-attachments/assets/3a768481-d5f1-44c0-b287-30046590d99d)
 
 ```lua
 require("buvvers").setup({
