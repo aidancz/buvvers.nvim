@@ -389,6 +389,18 @@ M.autocmd_set_true = function()
 				end,
 			}
 		)
+		-- vim.api.nvim_create_autocmd(
+		-- 	{
+		-- 		"TabEnter",
+		-- 	},
+		-- 	{
+		-- 		group = M.cache.augroup,
+		-- 		callback = function()
+		-- 			-- TODO: move the window when entering a tab page
+		-- 			-- https://github.com/neovim/neovim/issues/33790
+		-- 		end,
+		-- 	}
+		-- )
 		M.config.autocmd_hook(M.cache.augroup)
 	end
 end
