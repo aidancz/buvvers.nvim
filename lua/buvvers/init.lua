@@ -324,53 +324,31 @@ M.autocmd_set_true = function()
 	if M.autocmd_is_valid() then
 		-- do nothing
 	else
-		vim.api.nvim_create_autocmd(
-			{
-				"BufAdd",
-				"BufDelete",
-				"BufFilePost",
-			},
-			{
-				group = M.cache.augroup,
-				callback = function()
-					vim.schedule(function()
-					-- BufAdd:    https://github.com/neovim/neovim/issues/29419
-					-- BufDelete: wait until the buffer is deleted
-						M.pure_open2()
-						M.pure_open3()
-					end)
-				end,
-			}
-		)
-		vim.api.nvim_create_autocmd(
-			{
-				"BufEnter",
-			},
-			{
-				group = M.cache.augroup,
-				callback = function()
-					vim.schedule(function()
-					-- since BufAdd    use vim.schedule, BufEnter should too
-					-- since BufDelete use vim.schedule, BufEnter should too
-						M.pure_open3()
-					end)
-				end,
-			}
-		)
-		if M.config.autocmd_additional_refresh_event ~= nil then
-			vim.api.nvim_create_autocmd(
-				M.config.autocmd_additional_refresh_event,
-				{
-					group = M.cache.augroup,
-					callback = function()
-						vim.schedule(function()
-							M.pure_open2()
-							M.pure_open3()
-						end)
-					end,
-				}
-			)
+		local refresh_event = {
+			"BufAdd",
+			"BufDelete",
+			"BufEnter",
+			"BufFilePost",
+		}
+		if M.config.autocmd_additional_refresh_event == nil then
+			M.config.autocmd_additional_refresh_event = {}
 		end
+		if type(M.config.autocmd_additional_refresh_event) == "string" then
+			M.config.autocmd_additional_refresh_event = {M.config.autocmd_additional_refresh_event}
+		end
+		vim.list_extend(
+			refresh_event,
+			M.config.autocmd_additional_refresh_event
+		)
+		vim.api.nvim_create_autocmd(
+			refresh_event,
+			{
+				group = M.cache.augroup,
+				callback = vim.schedule_wrap(M.pure_open),
+				-- https://github.com/neovim/neovim/issues/29419
+			}
+		)
+
 		vim.api.nvim_create_autocmd(
 			{
 				"WinClosed",
@@ -389,6 +367,7 @@ M.autocmd_set_true = function()
 				end,
 			}
 		)
+
 		-- vim.api.nvim_create_autocmd(
 		-- 	{
 		-- 		"TabEnter",
@@ -401,6 +380,7 @@ M.autocmd_set_true = function()
 		-- 		end,
 		-- 	}
 		-- )
+
 		M.config.autocmd_hook(M.cache.augroup)
 	end
 end
