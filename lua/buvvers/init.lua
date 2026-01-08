@@ -16,16 +16,11 @@ M.config = {
 			buf,
 			false,
 			{
-				relative = "editor",
-				anchor = "NE",
-				border = "none",
-				row = 0,
-				col = vim.o.columns,
+				win = -1,
+				split = "right",
 				width = math.floor(vim.o.columns / 8),
-				height = vim.o.lines - 2,
 				style = "minimal",
-				focusable = false,
-				zindex = 1,
+				focusable = false, -- https://github.com/neovim/neovim/issues/29365
 			}
 		)
 	end,
@@ -59,7 +54,7 @@ end
 -- # cache
 
 M.cache = {
-	listed_bufs = nil,
+	bufs = nil,
 	buf_handle = nil,
 	buf_hl_text_ns_id = vim.api.nvim_create_namespace("buvvers_buf_hl_text"),
 	buf_hl_line_ns_id = vim.api.nvim_create_namespace("buvvers_buf_hl_line"),
@@ -70,21 +65,47 @@ M.cache = {
 
 -- # function: data
 
+M.buf_is_listed = function(buffer_handle)
+-- any buffer has two independent flags: loaded and listed
+-- loaded is related to memory, whether the buffer is actual existent
+-- listed is related to visual, whether the buffer want to be seen
+	return vim.fn.buflisted(buffer_handle) ~= 0
+end
+
 M.get_listed_bufs = function()
 	local listed_bufs = {}
 	for _, i in ipairs(vim.api.nvim_list_bufs()) do
-		if vim.fn.buflisted(i) ~= 0 then
-		-- any buffer has two independent flags: loaded and listed
-		-- loaded is related to memory, whether the buffer is actual existent
-		-- listed is related to visual, whether the buffer want to be seen
+		if M.buf_is_listed(i) then
 			table.insert(listed_bufs, i)
 		end
 	end
 	return listed_bufs
 end
 
-M.listed_bufs_update = function()
-	M.cache.listed_bufs = M.get_listed_bufs()
+M.buf_is_help = function(buffer_handle)
+	local buftype = vim.api.nvim_get_option_value("buftype", {buf = buffer_handle})
+	return buftype == "help"
+end
+
+M.get_help_bufs = function()
+	local help_bufs = {}
+	for _, i in ipairs(vim.api.nvim_list_bufs()) do
+		if M.buf_is_help(i) then
+			table.insert(help_bufs, i)
+		end
+	end
+	return help_bufs
+end
+
+M.bufs_update = function()
+	local current_buf = vim.api.nvim_get_current_buf()
+	if M.buf_is_help(current_buf) then
+		M.cache.bufs = M.get_help_bufs()
+	elseif M.buf_is_listed(current_buf) then
+		M.cache.bufs = M.get_listed_bufs()
+	else
+		M.cache.bufs = M.get_listed_bufs()
+	end
 end
 
 -- # function: buffer
@@ -154,7 +175,7 @@ M.parse_buffer_name_list = function(name_l)
 end
 
 M.buf_update = function()
-	local name_l = M.config.buffer_handle_list_to_buffer_name_list(M.cache.listed_bufs)
+	local name_l = M.config.buffer_handle_list_to_buffer_name_list(M.cache.bufs)
 	local line_l, highlight_l = M.parse_buffer_name_list(name_l)
 
 	-- set lines
@@ -216,7 +237,7 @@ end
 
 M.buf_hl_line_update = function()
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
-	for n, i in ipairs(M.cache.listed_bufs) do
+	for n, i in ipairs(M.cache.bufs) do
 		if i == current_buffer_handle then
 			M.buf_hl_line(n)
 			return
@@ -258,7 +279,7 @@ end
 
 M.win_cursor_update = function()
 	local current_buffer_handle = vim.api.nvim_get_current_buf()
-	for n, i in ipairs(M.cache.listed_bufs) do
+	for n, i in ipairs(M.cache.bufs) do
 		if i == current_buffer_handle then
 			vim.api.nvim_win_set_cursor(M.cache.win_handle, {n, 0})
 			break
@@ -277,7 +298,7 @@ M.pure_open1 = function()
 end
 
 M.pure_open2 = function()
-	M.listed_bufs_update()
+	M.bufs_update()
 	M.buf_update()
 end
 

@@ -2,11 +2,23 @@
 
 [demo](https://github.com/user-attachments/assets/498bfeac-d643-4879-9ca9-5767112279c0)
 
-display buffers vertically (use a floating window by default)
+display buffers vertically
 
 minimal and robust
 
 inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
+
+> [!NOTE]
+>
+> this plugin uses a split window by default
+>
+> vim has a new feature called "tabpanel", which is perfect for displaying buffers:
+>
+> https://github.com/vim/vim/commit/be5bd4d6292fddcc103091407792730aaa48cc48
+>
+> but neovim has decided not to port it for now:
+>
+> https://github.com/neovim/neovim/issues/34273
 
 # default config
 
@@ -32,16 +44,10 @@ inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
 			buf,
 			false,
 			{
-				relative = "editor",
-				anchor = "NE",
-				border = "none",
-				row = 0,
-				col = vim.o.columns,
+				win = -1,
+				split = "right",
 				width = math.floor(vim.o.columns / 8),
-				height = vim.o.lines - 2,
 				style = "minimal",
-				focusable = false,
-				zindex = 1,
 			}
 		)
 	end,
@@ -87,7 +93,7 @@ require("buvvers").setup()
 
 that's it!
 
-you can call these functions:
+then you can use these functions:
 
 | function                    | description     |
 |-----------------------------|-----------------|
@@ -115,7 +121,7 @@ require("buvvers").open()
 
 the buffer & window & autocmd of buvvers are tied to each other
 
-you can only enable / disable them all
+you can only enable/disable them all
 
 so when you try to close the window of buvvers, you have to choose:
 
@@ -141,33 +147,7 @@ require("buvvers").open()
 
 if you want to change how the buvvers window behaves:
 
-```lua
-require("buvvers").setup({
-	win_open = function(buf)
-		return
-		vim.api.nvim_open_win(
-			buf,
-			false,
-			{
-				relative = "editor",
-				anchor = "SE",
-				border = "bold",
-				row = vim.o.lines - 2,
-				col = vim.o.columns,
-				width = 20,
-				height = 8,
-				style = "minimal",
-				focusable = true,
-				-- make the window focusable, this is useful if you have buffer local keybindings
-				zindex = 1,
-			}
-		)
-	end,
-})
-require("buvvers").open()
-```
-
-you can use a split window if you want
+for example, place the window at the left:
 
 ```lua
 require("buvvers").setup({
@@ -178,7 +158,7 @@ require("buvvers").setup({
 			false,
 			{
 				win = -1,
-				split = "right",
+				split = "left",
 				width = math.floor(vim.o.columns / 8),
 				style = "minimal",
 			}
@@ -194,32 +174,8 @@ the buvvers buffer does not have any keybindings by default
 
 you can add keybindings yourself, for example:
 
-> [!NOTE]
->
-> make buvvers window focusable first
-
 ```lua
 require("buvvers").setup({
-	win_open = function(buf)
-		return
-		vim.api.nvim_open_win(
-			buf,
-			false,
-			{
-				relative = "editor",
-				anchor = "SE",
-				border = "bold",
-				row = vim.o.lines - 2,
-				col = vim.o.columns,
-				width = 20,
-				height = 8,
-				style = "minimal",
-				focusable = true,
-				-- make the window focusable, this is useful if you have buffer local keybindings
-				zindex = 1,
-			}
-		)
-	end,
 	buf_hook = function(buf)
 		vim.keymap.set(
 		-- bind `q` to disable buvvers
