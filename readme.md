@@ -2,23 +2,11 @@
 
 [demo](https://github.com/user-attachments/assets/498bfeac-d643-4879-9ca9-5767112279c0)
 
-display buffers vertically
+display buffers vertically, making `:bnext` / `:bprevious` predictable
 
 minimal and robust
 
 inspired by [vuffers](https://github.com/Hajime-Suzuki/vuffers.nvim)
-
-> [!NOTE]
->
-> this plugin uses a split window by default
->
-> vim has a new feature called "tabpanel", which is perfect for displaying buffers:
->
-> https://github.com/vim/vim/commit/be5bd4d6292fddcc103091407792730aaa48cc48
->
-> but neovim has decided not to port it for now:
->
-> https://github.com/neovim/neovim/issues/34273
 
 # default config
 
@@ -170,9 +158,13 @@ require("buvvers").open()
 
 ## setup example 5:
 
-the buvvers buffer does not have any keybindings by default
+buvvers is meant to be a simple viewport for buffers
 
-you can add keybindings yourself, for example:
+so the buvvers buffer does not have any keybindings by default
+
+although not recommended, you can add keybindings yourself, for example:
+
+<details>
 
 ```lua
 require("buvvers").setup({
@@ -224,9 +216,13 @@ require("buvvers").setup({
 require("buvvers").open()
 ```
 
+</details>
+
 ## setup example 6:
 
 you can customize the display buffer names by modifying `buffer_handle_list_to_buffer_name_list` function
+
+<details>
 
 the function's input is a `buffer_handle_list`, for example:
 
@@ -459,3 +455,27 @@ require("buvvers").open()
 buvvers doesn't refresh when a buffer's modification state changes
 
 so it is required to set `autocmd_additional_refresh_event = {"BufModifiedSet", "BufWritePost"},`
+
+</details>
+
+# todo
+
+## tabpanel
+
+this plugin uses a split window by default
+
+vim has a new feature called "tabpanel", which is perfect for displaying buffers:
+
+https://github.com/vim/vim/commit/be5bd4d6292fddcc103091407792730aaa48cc48
+
+but neovim has decided not to port it for now:
+
+https://github.com/neovim/neovim/issues/34273
+
+## focusable
+
+https://github.com/neovim/neovim/issues/29365
+
+## use Optionset modified replace BufModifiedSet
+
+https://github.com/neovim/neovim/pull/35610
