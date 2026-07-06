@@ -389,20 +389,20 @@ M.autocmd_set_true = function()
 			}
 		)
 
-		vim.api.nvim_create_autocmd(
-			{
-				"TabEnter",
-			},
-			{
-				group = M.cache.augroup,
-				callback = function()
-					vim.schedule(function()
-						M.pure_close()
-						M.pure_open()
-					end)
-				end,
-			}
-		)
+		-- vim.api.nvim_create_autocmd(
+		-- 	{
+		-- 		"TabEnter",
+		-- 	},
+		-- 	{
+		-- 		group = M.cache.augroup,
+		-- 		callback = function()
+		-- 			vim.schedule(function()
+		-- 				M.pure_close()
+		-- 				M.pure_open()
+		-- 			end)
+		-- 		end,
+		-- 	}
+		-- )
 
 		M.config.autocmd_hook(M.cache.augroup)
 	end
